@@ -7,7 +7,7 @@
 <meta name="description" content="温故而知新">
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<link rel="shortcut icon" href="https://hhanyuqiang.github.io/favicon.ico?v=1608869434198">
+<link rel="shortcut icon" href="https://hhanyuqiang.github.io/favicon.ico?v=1608870041518">
 
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
 <link rel="stylesheet" href="https://unpkg.com/papercss@1.6.1/dist/paper.min.css" />
@@ -98,8 +98,11 @@
 <ul>
 <li><a href="#%E5%88%9B%E5%BB%BAidentityserver4%E9%A1%B9%E7%9B%AE">创建IdentityServer4项目</a>
 <ul>
-<li><a href="#%E4%BF%AE%E6%94%B9configcs">修改Config.cs</a></li>
+<li><a href="#%E4%BF%AE%E6%94%B9configcs">修改Config.cs</a>
+<ul>
 <li><a href="#%E6%B3%A8%E6%84%8F">注意</a></li>
+</ul>
+</li>
 <li><a href="#%E4%BF%AE%E6%94%B9startupcs">修改Startup.cs</a></li>
 <li><a href="#%E4%BF%AE%E6%94%B9launchsettingsjson">修改launchSettings.json</a></li>
 </ul>
@@ -119,6 +122,7 @@
 <li><a href="#%E5%86%8D%E5%9B%9E%E5%88%B0consoleclient%E9%A1%B9%E7%9B%AE-%E4%BF%AE%E6%94%B9program">再回到ConsoleClient项目 修改Program</a></li>
 </ul>
 </li>
+<li><a href="#%E6%9C%80%E5%90%8E">最后</a></li>
 </ul>
 </p>
 <ul>
@@ -240,7 +244,7 @@ dotnet new is4inmem --name Idp //创建一个is4inmem模板的项目 名字为Id
             };
     }
 </code></pre>
-<h3 id="注意">注意</h3>
+<h4 id="注意">注意</h4>
 <p>需要注意的是4.x版本的ApiScope和ApiResource是分开配置的，然后在ApiResource中一定要添加Scopes。如果你在网上搜的IdentityServer4教程比较老的，都是没有这个ApiScope的，默认ApiResource的Name作为Scope。类似这样：</p>
 <pre><code>public static IEnumerable&lt;ApiResource&gt; ApiResources =&gt;
         new ApiResource[]
@@ -385,6 +389,11 @@ public static IEnumerable&lt;Client&gt; Clients =&gt;
       }
   }
 </code></pre>
+<h1 id="最后">最后</h1>
+<p>运行结果<br>
+<img src="https://hhanyuqiang.github.io/post-images/1608870028999.jpg" alt="" loading="lazy"><br>
+解决方案<br>
+<img src="https://hhanyuqiang.github.io/post-images/1608870039149.jpg" alt="" loading="lazy"></p>
 
             </div>
           </article>
@@ -397,7 +406,7 @@ public static IEnumerable&lt;Client&gt; Clients =&gt;
 
       <div class="sm-12 md-4 col sidebar">
   <div class="paper info-container">
-    <img src="https://hhanyuqiang.github.io/images/avatar.png?v=1608869434198" class="no-responsive avatar">
+    <img src="https://hhanyuqiang.github.io/images/avatar.png?v=1608870041518" class="no-responsive avatar">
     <div class="text-muted">温故而知新</div>
     <div class="social-container">
       
