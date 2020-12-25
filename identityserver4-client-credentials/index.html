@@ -7,7 +7,7 @@
 <meta name="description" content="温故而知新">
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<link rel="shortcut icon" href="https://hhanyuqiang.github.io/favicon.ico?v=1608870041518">
+<link rel="shortcut icon" href="https://hhanyuqiang.github.io/favicon.ico?v=1608880790707">
 
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
 <link rel="stylesheet" href="https://unpkg.com/papercss@1.6.1/dist/paper.min.css" />
@@ -85,7 +85,7 @@
             <p class="article-meta">
               2020-12-25
               
-                <a href="https://hhanyuqiang.github.io/tKVIRz-bz/" class="badge ">
+                <a href="https://hhanyuqiang.github.io/tKVIRz-bz/" class="badge secondary">
                   identityserver4
                 </a>
               
@@ -179,7 +179,7 @@
 dotnet new is4inmem --name Idp //创建一个is4inmem模板的项目 名字为Idp
 </code></pre>
 <h3 id="修改configcs">修改Config.cs</h3>
-<pre><code>     public static class Config
+<pre><code>    public static class Config
     {
         public static IEnumerable&lt;IdentityResource&gt; IdentityResources =&gt;
             new IdentityResource[]
@@ -202,9 +202,9 @@ dotnet new is4inmem --name Idp //创建一个is4inmem模板的项目 名字为Id
         public static IEnumerable&lt;ApiResource&gt; ApiResources =&gt;
             new ApiResource[]
             {
-                new ApiResource(&quot;api1&quot;,&quot;My DotNet Core API&quot;)
+                new ApiResource(&quot;api1&quot;)
                 {
-                    Scopes = { &quot;scope1&quot;}
+                    Scopes = { &quot;scope1&quot;, &quot;scope2&quot; }
                 }
             };
 
@@ -225,7 +225,7 @@ dotnet new is4inmem --name Idp //创建一个is4inmem模板的项目 名字为Id
                     AllowedGrantTypes = GrantTypes.ClientCredentials,
                     ClientSecrets = { new Secret(&quot;511536EF-F270-4058-80CA-1C89C192F69A&quot;.Sha256()) },
 
-                    AllowedScopes = { &quot;scope1&quot; }
+                    AllowedScopes = { &quot;scope1&quot; , &quot;scope2&quot; }
                 },
                 new Client
                 {
@@ -271,7 +271,7 @@ public static IEnumerable&lt;Client&gt; Clients =&gt;
 <pre><code>   builder.AddInMemoryApiResources(Config.ApiResources);
 </code></pre>
 <h3 id="修改launchsettingsjson">修改launchSettings.json</h3>
-<pre><code>   &quot;applicationUrl&quot;: &quot;http://localhost:5000&quot;
+<pre><code>   &quot;applicationUrl&quot;: &quot;https://localhost:5000&quot;
 </code></pre>
 <h2 id="创建控制台项目consoleclient">创建控制台项目consoleclient</h2>
 <p>添加NuGet程序包 IdentityModel</p>
@@ -285,7 +285,7 @@ public static IEnumerable&lt;Client&gt; Clients =&gt;
         {
             var client = new HttpClient();
             //请求accesstoken
-            var disco = await client.GetDiscoveryDocumentAsync(&quot;http://localhost:5000&quot;);
+            var disco = await client.GetDiscoveryDocumentAsync(&quot;https://localhost:5000&quot;);
             if (disco.IsError)
             {
                 Console.WriteLine(disco.Error);
@@ -406,7 +406,7 @@ public static IEnumerable&lt;Client&gt; Clients =&gt;
 
       <div class="sm-12 md-4 col sidebar">
   <div class="paper info-container">
-    <img src="https://hhanyuqiang.github.io/images/avatar.png?v=1608870041518" class="no-responsive avatar">
+    <img src="https://hhanyuqiang.github.io/images/avatar.png?v=1608880790707" class="no-responsive avatar">
     <div class="text-muted">温故而知新</div>
     <div class="social-container">
       
@@ -431,6 +431,12 @@ public static IEnumerable&lt;Client&gt; Clients =&gt;
         
           
             <li>
+              <a href="https://hhanyuqiang.github.io/identityserver4-and-aspnet-web-api/">IdentityServer4 and ASP.NET Web API</a>
+            </li>
+          
+        
+          
+            <li>
               <a href="https://hhanyuqiang.github.io/identityserver4-client-credentials/">IdentityServer4 Client Credentials</a>
             </li>
           
@@ -444,7 +450,7 @@ public static IEnumerable&lt;Client&gt; Clients =&gt;
     </div>
     <div class="row">
       
-        <a href="https://hhanyuqiang.github.io/tKVIRz-bz/" class="badge secondary">
+        <a href="https://hhanyuqiang.github.io/tKVIRz-bz/" class="badge success">
           identityserver4
         </a>
       

@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>IdentityServer4 and ASP.NET Web API | hyq</title>
+<meta name="description" content="温故而知新">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<link rel="shortcut icon" href="https://hhanyuqiang.github.io/favicon.ico?v=1608880790707">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="stylesheet" href="https://unpkg.com/papercss@1.6.1/dist/paper.min.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+<link rel="stylesheet" href="https://hhanyuqiang.github.io/styles/main.css">
+
+
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+  </head>
+  <body>
+  
+    <nav class="navbar border fixed split-nav">
+  <div class="nav-brand">
+    <h3><a href="https://hhanyuqiang.github.io">hyq</a></h3>
+  </div>
+  <div class="collapsible">
+    <input id="collapsible1" type="checkbox" name="collapsible1">
+    <button>
+      <label for="collapsible1">
+        <div class="bar1"></div>
+        <div class="bar2"></div>
+        <div class="bar3"></div>
+      </label>
+    </button>
+    <div class="collapsible-body">
+      <ul class="inline">
+        
+          <li>
+            
+              <a href="/" class="menu">
+                首页
+              </a>
+            
+          </li>
+        
+          <li>
+            
+              <a href="/archives" class="menu">
+                归档
+              </a>
+            
+          </li>
+        
+          <li>
+            
+              <a href="/tags" class="menu">
+                标签
+              </a>
+            
+          </li>
+        
+          <li>
+            
+              <a href="/post/about" class="menu">
+                关于
+              </a>
+            
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div id="top" class="row site">
+      <div class="sm-12 md-8 col">
+        <div class="paper">
+          <article class="article">
+            <h1>IdentityServer4 and ASP.NET Web API</h1>
+            <p class="article-meta">
+              2020-12-25
+              
+            </p>
+            
+            <div class="post-content">
+              <p>接着上一篇<br>
+上一篇webapi是.NET Core，这篇为.NET Framework</p>
+<h2 id="修改startup的configureservices方法">修改Startup.的ConfigureServices方法</h2>
+<pre><code>var builder = services.AddIdentityServer(options =&gt;
+            {
+                options.AccessTokenJwtType = &quot;JWT&quot;;
+                options.Events.RaiseErrorEvents = true;
+                options.Events.RaiseInformationEvents = true;
+                options.Events.RaiseFailureEvents = true;
+                options.Events.RaiseSuccessEvents = true;
+                options.EmitStaticAudienceClaim = true;
+            })
+</code></pre>
+<h2 id="创建net-framework项目net4api">创建.NET Framework项目Net4Api</h2>
+<p>安装NuGet包<br>
+<code>IdentitySever3.AccessTokenValidation</code><br>
+<code>Microsoft.Owin.Host.SystemWeb</code><br>
+<code>Microsoft.Owin.Cors</code></p>
+<h3 id="添加startupcs">添加Startup.cs</h3>
+<pre><code> public void Configuration(IAppBuilder app)
+        {
+            JwtSecurityTokenHandler.InboundClaimTypeMap.Clear();
+
+            app.UseIdentityServerBearerTokenAuthentication(
+                new IdentityServerBearerTokenAuthenticationOptions
+                {
+                    Authority = &quot;https://localhost:5000&quot;,
+                    ValidationMode = ValidationMode.Local,
+                    RequiredScopes = new[] { &quot;scope1&quot; },
+                });
+        }
+</code></pre>
+<h3 id="添加identitycontroller">添加IdentityController</h3>
+<pre><code> [HttpGet]
+        [Route(&quot;identity&quot;)]
+        [Authorize]
+        public IHttpActionResult Get()
+        {
+            var principal = User as ClaimsPrincipal;
+
+            var claims = from c in principal.Identities.First().Claims
+                   select new
+                   {
+                       c.Type,
+                       c.Value
+                   };
+            return Json(claims);
+        }
+</code></pre>
+<h2 id="修改consoleclient项目">修改ConsoleClient项目</h2>
+<p>添加方法GetTokenAndCallNet4ApiAsync</p>
+<pre><code> public static async Task GetTokenAndCallNet4ApiAsync()
+        {
+            // discover endpoints from metadata
+            var client = new HttpClient();
+            var disco = await client.GetDiscoveryDocumentAsync(&quot;https://localhost:5000&quot;);
+            if (disco.IsError)
+            {
+                Console.WriteLine(disco.Error);
+                return;
+            }
+
+            var tokenResponse = await client.RequestClientCredentialsTokenAsync(new ClientCredentialsTokenRequest
+            {
+                Address = disco.TokenEndpoint,
+
+                ClientId = &quot;consoleclient&quot;,
+                ClientSecret = &quot;511536EF-F270-4058-80CA-1C89C192F69A&quot;,
+                Scope = &quot;scope1&quot;
+            });
+
+            if (tokenResponse.IsError)
+            {
+                Console.WriteLine(tokenResponse.Error);
+                return;
+            }
+
+            Console.WriteLine(tokenResponse.Json);
+
+            // call api
+            var apiClient = new HttpClient();
+            apiClient.SetBearerToken(tokenResponse.AccessToken);
+
+            var response = await apiClient.GetAsync(&quot;http://localhost:8001/identity&quot;);
+            if (!response.IsSuccessStatusCode)
+            {
+                Console.WriteLine(response.StatusCode);
+                Console.WriteLine(await response.Content.ReadAsStringAsync());
+
+                Console.WriteLine(&quot;Calling Verify&quot;);
+                response = await apiClient.GetAsync(&quot;http://localhost:8001/verify&quot;);
+                Console.WriteLine(response.StatusCode);
+                Console.WriteLine(await response.Content.ReadAsStringAsync());
+            }
+            else
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                Console.WriteLine(JArray.Parse(content));
+            }
+        }
+</code></pre>
+<p>Main里面的掉用  <code>await GetTokenAndCallNet4ApiAsync();</code><br>
+<img src="https://hhanyuqiang.github.io/post-images/1608877012878.jpg" alt="" loading="lazy"></p>
+
+            </div>
+          </article>
+        </div>
+        <div class="paper" data-aos="fade-in">
+          
+            <div class="next-post">
+              <div class="next">
+                下一篇
+              </div>
+              <a href="https://hhanyuqiang.github.io/identityserver4-client-credentials/">
+                <h3 class="post-title">
+                  IdentityServer4 Client Credentials
+                </h3>
+              </a>
+            </div>
+          
+        </div>
+        
+      </div>
+
+      <div class="sm-12 md-4 col sidebar">
+  <div class="paper info-container">
+    <img src="https://hhanyuqiang.github.io/images/avatar.png?v=1608880790707" class="no-responsive avatar">
+    <div class="text-muted">温故而知新</div>
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+  </div>
+  <div class="paper">
+    <div class="sidebar-title">
+      最新文章
+    </div>
+    <div class="row">
+      <ul>
+        
+          
+            <li>
+              <a href="https://hhanyuqiang.github.io/identityserver4-and-aspnet-web-api/">IdentityServer4 and ASP.NET Web API</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="https://hhanyuqiang.github.io/identityserver4-client-credentials/">IdentityServer4 Client Credentials</a>
+            </li>
+          
+        
+      </ul>
+    </div>
+  </div>
+  <div class="paper">
+    <div class="sidebar-title">
+      标签列表
+    </div>
+    <div class="row">
+      
+        <a href="https://hhanyuqiang.github.io/tKVIRz-bz/" class="badge ">
+          identityserver4
+        </a>
+      
+    </div>
+  </div>
+  <div class="paper">
+     | <a class="rss" href="https://hhanyuqiang.github.io/atom.xml" target="_blank">RSS</a>
+  </div>
+</div>
+
+
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+</script>
+
+
+
+
+  </body>
+</html>

@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://hhanyuqiang.github.io</id>
     <title>hyq</title>
-    <updated>2020-12-25T04:20:46.145Z</updated>
+    <updated>2020-12-25T07:19:55.772Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://hhanyuqiang.github.io"/>
     <link rel="self" href="https://hhanyuqiang.github.io/atom.xml"/>
@@ -10,6 +10,13 @@
     <logo>https://hhanyuqiang.github.io/images/avatar.png</logo>
     <icon>https://hhanyuqiang.github.io/favicon.ico</icon>
     <rights>All rights reserved 2020, hyq</rights>
+    <entry>
+        <title type="html"><![CDATA[IdentityServer4 and ASP.NET Web API]]></title>
+        <id>https://hhanyuqiang.github.io/identityserver4-and-aspnet-web-api/</id>
+        <link href="https://hhanyuqiang.github.io/identityserver4-and-aspnet-web-api/">
+        </link>
+        <updated>2020-12-25T04:21:20.000Z</updated>
+    </entry>
     <entry>
         <title type="html"><![CDATA[IdentityServer4 Client Credentials]]></title>
         <id>https://hhanyuqiang.github.io/identityserver4-client-credentials/</id>
