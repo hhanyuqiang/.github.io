@@ -7,7 +7,7 @@
 <meta name="description" content="温故而知新">
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<link rel="shortcut icon" href="https://hhanyuqiang.github.io/favicon.ico?v=1608880839030">
+<link rel="shortcut icon" href="https://hhanyuqiang.github.io/favicon.ico?v=1608883910932">
 
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
 <link rel="stylesheet" href="https://unpkg.com/papercss@1.6.1/dist/paper.min.css" />
@@ -92,11 +92,11 @@
             </p>
             
             <div class="post-content">
-              <!-- more -->
+              <p>.NET Core与.NET Framework对接IdentityServer4</p>
+<!-- more -->
 <p><ul class="markdownIt-TOC">
-<li><a href="#%E5%BC%80%E5%A7%8B">开始</a>
-<ul>
-<li><a href="#%E5%88%9B%E5%BB%BAidentityserver4%E9%A1%B9%E7%9B%AE">创建IdentityServer4项目</a>
+<li><a href="#%E5%88%9B%E5%BB%BAidentityserver4%E9%A1%B9%E7%9B%AE">创建IdentityServer4项目</a><br>
+*
 <ul>
 <li><a href="#%E4%BF%AE%E6%94%B9configcs">修改Config.cs</a>
 <ul>
@@ -107,22 +107,30 @@
 <li><a href="#%E4%BF%AE%E6%94%B9launchsettingsjson">修改launchSettings.json</a></li>
 </ul>
 </li>
-<li><a href="#%E5%88%9B%E5%BB%BA%E6%8E%A7%E5%88%B6%E5%8F%B0%E9%A1%B9%E7%9B%AEconsoleclient">创建控制台项目consoleclient</a>
+<li><a href="#%E5%88%9B%E5%BB%BA%E5%AE%A2%E6%88%B7%E7%AB%AF-%E6%8E%A7%E5%88%B6%E5%8F%B0%E9%A1%B9%E7%9B%AEconsoleclient">创建客户端 控制台项目consoleclient</a><br>
+*
 <ul>
 <li><a href="#%E5%BC%80%E5%A7%8B%E4%BF%AE%E6%94%B9programcs">开始修改Program.cs</a></li>
 </ul>
 </li>
-<li><a href="#%E6%B7%BB%E5%8A%A0coreapi%E9%A1%B9%E7%9B%AE">添加CoreAPI项目</a>
+<li><a href="#%E6%B7%BB%E5%8A%A0coreapi%E9%A1%B9%E7%9B%AEnet-core">添加CoreAPI项目(.NET CORE)</a><br>
+*
 <ul>
 <li><a href="#%E4%BF%AE%E6%94%B9startupcs-2">修改Startup.cs</a></li>
 <li><a href="#%E4%BF%AE%E6%94%B9configureservices">修改ConfigureServices</a></li>
 <li><a href="#%E4%BF%AE%E6%94%B9weatherforecastcontroller">修改WeatherForecastController</a></li>
-</ul>
-</li>
 <li><a href="#%E5%86%8D%E5%9B%9E%E5%88%B0consoleclient%E9%A1%B9%E7%9B%AE-%E4%BF%AE%E6%94%B9program">再回到ConsoleClient项目 修改Program</a></li>
 </ul>
 </li>
-<li><a href="#%E6%9C%80%E5%90%8E">最后</a></li>
+<li><a href="#%E5%88%9B%E5%BB%BA%E9%A1%B9%E7%9B%AEnet4apinet-framework">创建项目Net4Api（.NET Framework）</a><br>
+*
+<ul>
+<li><a href="#%E6%B7%BB%E5%8A%A0startupcs">添加Startup.cs</a></li>
+<li><a href="#%E6%B7%BB%E5%8A%A0identitycontroller">添加IdentityController</a></li>
+<li><a href="#%E4%BF%AE%E6%94%B9consoleclient%E9%A1%B9%E7%9B%AE">修改ConsoleClient项目</a></li>
+<li><a href="#%E4%BF%AE%E6%94%B9%E6%8E%88%E6%9D%83%E4%B8%AD%E5%BF%83startup%E7%9A%84configureservices%E6%96%B9%E6%B3%95">修改授权中心Startup.的ConfigureServices方法</a></li>
+</ul>
+</li>
 </ul>
 </p>
 <ul>
@@ -172,8 +180,7 @@
 </tr>
 </tbody>
 </table>
-<h1 id="开始">开始</h1>
-<h2 id="创建identityserver4项目">创建IdentityServer4项目</h2>
+<h1 id="创建identityserver4项目">创建IdentityServer4项目</h1>
 <p>使用IdentityServer4 来搭建一个鉴权中心，首先建议安装一下IdentityServer4的官方项目模板。也可以不安装，自己创建项目，然后NuGet安装需要的包也行。（不过还是推荐用官方的模板，很方便）。</p>
 <pre><code>dotnet new -i identityserver4.templates //下载identityserver4模板
 dotnet new is4inmem --name Idp //创建一个is4inmem模板的项目 名字为Idp
@@ -273,7 +280,7 @@ public static IEnumerable&lt;Client&gt; Clients =&gt;
 <h3 id="修改launchsettingsjson">修改launchSettings.json</h3>
 <pre><code>   &quot;applicationUrl&quot;: &quot;https://localhost:5000&quot;
 </code></pre>
-<h2 id="创建控制台项目consoleclient">创建控制台项目consoleclient</h2>
+<h1 id="创建客户端-控制台项目consoleclient">创建客户端 控制台项目consoleclient</h1>
 <p>添加NuGet程序包 IdentityModel</p>
 <h3 id="开始修改programcs">开始修改Program.cs</h3>
 <pre><code>static  async Task Main(string[] args)
@@ -313,7 +320,7 @@ public static IEnumerable&lt;Client&gt; Clients =&gt;
 <p>启动调试<br>
 <img src="https://hhanyuqiang.github.io/post-images/1608866794854.jpg" alt="" loading="lazy"><br>
 说明请求accesstoken成功</p>
-<h2 id="添加coreapi项目">添加CoreAPI项目</h2>
+<h1 id="添加coreapi项目net-core">添加CoreAPI项目(.NET CORE)</h1>
 <p>NuGet安装：<code>Microsoft.AspNetCore.Authentication.JwtBearer</code></p>
 <h3 id="修改startupcs-2">修改Startup.cs</h3>
 <pre><code>       services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -389,11 +396,110 @@ public static IEnumerable&lt;Client&gt; Clients =&gt;
       }
   }
 </code></pre>
-<h1 id="最后">最后</h1>
 <p>运行结果<br>
-<img src="https://hhanyuqiang.github.io/post-images/1608870028999.jpg" alt="" loading="lazy"><br>
-解决方案<br>
-<img src="https://hhanyuqiang.github.io/post-images/1608870039149.jpg" alt="" loading="lazy"></p>
+<img src="https://hhanyuqiang.github.io/post-images/1608870028999.jpg" alt="" loading="lazy"></p>
+<h1 id="创建项目net4apinet-framework">创建项目Net4Api（.NET Framework）</h1>
+<p>安装NuGet包<br>
+<code>IdentitySever3.AccessTokenValidation</code><br>
+<code>Microsoft.Owin.Host.SystemWeb</code><br>
+<code>Microsoft.Owin.Cors</code></p>
+<h3 id="添加startupcs">添加Startup.cs</h3>
+<pre><code> public void Configuration(IAppBuilder app)
+        {
+            JwtSecurityTokenHandler.InboundClaimTypeMap.Clear();
+
+            app.UseIdentityServerBearerTokenAuthentication(
+                new IdentityServerBearerTokenAuthenticationOptions
+                {
+                    Authority = &quot;https://localhost:5000&quot;,
+                    ValidationMode = ValidationMode.Local,
+                    RequiredScopes = new[] { &quot;scope1&quot; },
+                });
+        }
+</code></pre>
+<h3 id="添加identitycontroller">添加IdentityController</h3>
+<pre><code> [HttpGet]
+        [Route(&quot;identity&quot;)]
+        [Authorize]
+        public IHttpActionResult Get()
+        {
+            var principal = User as ClaimsPrincipal;
+
+            var claims = from c in principal.Identities.First().Claims
+                   select new
+                   {
+                       c.Type,
+                       c.Value
+                   };
+            return Json(claims);
+        }
+</code></pre>
+<h2 id="修改consoleclient项目">修改ConsoleClient项目</h2>
+<p>添加方法GetTokenAndCallNet4ApiAsync</p>
+<pre><code> public static async Task GetTokenAndCallNet4ApiAsync()
+        {
+            // discover endpoints from metadata
+            var client = new HttpClient();
+            var disco = await client.GetDiscoveryDocumentAsync(&quot;https://localhost:5000&quot;);
+            if (disco.IsError)
+            {
+                Console.WriteLine(disco.Error);
+                return;
+            }
+
+            var tokenResponse = await client.RequestClientCredentialsTokenAsync(new ClientCredentialsTokenRequest
+            {
+                Address = disco.TokenEndpoint,
+
+                ClientId = &quot;consoleclient&quot;,
+                ClientSecret = &quot;511536EF-F270-4058-80CA-1C89C192F69A&quot;,
+                Scope = &quot;scope1&quot;
+            });
+
+            if (tokenResponse.IsError)
+            {
+                Console.WriteLine(tokenResponse.Error);
+                return;
+            }
+
+            Console.WriteLine(tokenResponse.Json);
+
+            // call api
+            var apiClient = new HttpClient();
+            apiClient.SetBearerToken(tokenResponse.AccessToken);
+
+            var response = await apiClient.GetAsync(&quot;http://localhost:8001/identity&quot;);
+            if (!response.IsSuccessStatusCode)
+            {
+                Console.WriteLine(response.StatusCode);
+                Console.WriteLine(await response.Content.ReadAsStringAsync());
+
+                Console.WriteLine(&quot;Calling Verify&quot;);
+                response = await apiClient.GetAsync(&quot;http://localhost:8001/verify&quot;);
+                Console.WriteLine(response.StatusCode);
+                Console.WriteLine(await response.Content.ReadAsStringAsync());
+            }
+            else
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                Console.WriteLine(JArray.Parse(content));
+            }
+        }
+</code></pre>
+<h2 id="修改授权中心startup的configureservices方法">修改授权中心Startup.的ConfigureServices方法</h2>
+<pre><code>var builder = services.AddIdentityServer(options =&gt;
+            {
+                options.AccessTokenJwtType = &quot;JWT&quot;;
+                options.Events.RaiseErrorEvents = true;
+                options.Events.RaiseInformationEvents = true;
+                options.Events.RaiseFailureEvents = true;
+                options.Events.RaiseSuccessEvents = true;
+                options.EmitStaticAudienceClaim = true;
+            })
+</code></pre>
+<p>Main里面的掉用  <code>await GetTokenAndCallNet4ApiAsync();</code><br>
+#最后<br>
+<img src="https://hhanyuqiang.github.io/post-images/1608883713128.jpg" alt="" loading="lazy"></p>
 
             </div>
           </article>
@@ -406,7 +512,7 @@ public static IEnumerable&lt;Client&gt; Clients =&gt;
 
       <div class="sm-12 md-4 col sidebar">
   <div class="paper info-container">
-    <img src="https://hhanyuqiang.github.io/images/avatar.png?v=1608880839030" class="no-responsive avatar">
+    <img src="https://hhanyuqiang.github.io/images/avatar.png?v=1608883910932" class="no-responsive avatar">
     <div class="text-muted">温故而知新</div>
     <div class="social-container">
       
@@ -428,12 +534,6 @@ public static IEnumerable&lt;Client&gt; Clients =&gt;
     </div>
     <div class="row">
       <ul>
-        
-          
-            <li>
-              <a href="https://hhanyuqiang.github.io/identityserver4-and-aspnet-web-api/">IdentityServer4 and ASP.NET Web API</a>
-            </li>
-          
         
           
             <li>
