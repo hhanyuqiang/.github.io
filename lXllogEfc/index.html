@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" >
 
-<title>文章归档 | hyq</title>
+<title>IdentityServer4使用密码保护API资源 | hyq</title>
 <meta name="description" content="温故而知新">
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
@@ -23,6 +23,7 @@
 
   </head>
   <body>
+  
     <nav class="navbar border fixed split-nav">
   <div class="nav-brand">
     <h3><a href="https://hhanyuqiang.github.io">hyq</a></h3>
@@ -76,46 +77,105 @@
   </div>
 </nav>
 
-    
     <div id="top" class="row site">
       <div class="sm-12 md-8 col">
         <div class="paper">
-          
+          <article class="article">
+            <h1>IdentityServer4使用密码保护API资源</h1>
+            <p class="article-meta">
+              2020-12-25
+              
+            </p>
+            
+            <div class="post-content">
+              <p>略略略略略略略略</p>
+<!-- more -->
+<h1 id="资源所有者密码凭证授权流程描述">资源所有者密码凭证授权流程描述</h1>
+<ul>
+<li>资源所有者向客户端提供其用户名和密码。</li>
+<li>客户端从授权中请求访问令牌服务器的令牌端点，以获取访问令牌。当发起该请求时，授权服务器需要认证客户端的身份。</li>
+<li>授权服务器验证客户端身份，同时也验证资源所有者的凭据，如果都通过，则签发访问令牌。</li>
+</ul>
+<!-- more -->
+<p>开始修改代码<br>
+只需要将Idp项目的Config.cs文件的Clients方法修改为</p>
+<pre><code>       public static IEnumerable&lt;Client&gt; Clients =&gt;
+            new Client[]
+            {
+                //Client Credentials
+                new Client
+                {
+                    ClientId = &quot;consoleclient&quot;,
+                    ClientName = &quot;Client Credentials Client&quot;,
 
-          <h2 class="archives-title">文章归档</h2>
-          <div class="archives-container">
-            
-              <h3 class="year" data-aos-delay="500">2020</h3>
-              
-                
-                  <article class="post">
-                    <a href="https://hhanyuqiang.github.io/lXllogEfc/">
-                      <h4 class="post-title">
-                        IdentityServer4使用密码保护API资源
-                      </h4>
-                    </a>
-                  </article>
-                
-              
-                
-                  <article class="post">
-                    <a href="https://hhanyuqiang.github.io/identityserver4-client-credentials/">
-                      <h4 class="post-title">
-                        IdentityServer4客户端授权模式
-                      </h4>
-                    </a>
-                  </article>
-                
-              
-            
-          </div>
+                    AllowedGrantTypes = GrantTypes.ResourceOwnerPasswordAndClientCredentials,
+                    ClientSecrets = { new Secret(&quot;511536EF-F270-4058-80CA-1C89C192F69A&quot;.Sha256()) },
+
+                    AllowedScopes = { &quot;scope1&quot; , &quot;scope2&quot; }
+                },
+                new Client
+                {
+                    ClientId = &quot;interactive&quot;,
+                    ClientSecrets = { new Secret(&quot;49C1A7E1-0C79-4A89-A3D6-A37998FB86B0&quot;.Sha256()) },
+
+                    AllowedGrantTypes = GrantTypes.Code,
+
+                    RedirectUris = { &quot;https://localhost:44300/signin-oidc&quot; },
+                    FrontChannelLogoutUri = &quot;https://localhost:44300/signout-oidc&quot;,
+                    PostLogoutRedirectUris = { &quot;https://localhost:44300/signout-callback-oidc&quot; },
+
+                    AllowOfflineAccess = true,
+                    AllowedScopes = { &quot;openid&quot;, &quot;profile&quot;, &quot;scope2&quot; }
+                },
+            };
+</code></pre>
+<p>修改Consoleclient<br>
+将</p>
+<pre><code>
+            //var tokenResponse = await client.RequestClientCredentialsTokenAsync(new ClientCredentialsTokenRequest
+            //{
+            //    Address = disco.TokenEndpoint,
+
+            //    ClientId = &quot;consoleclient&quot;,
+            //    ClientSecret = &quot;511536EF-F270-4058-80CA-1C89C192F69A&quot;,
+            //    Scope = &quot;scope1&quot;
+            //});
+
+</code></pre>
+<p>修改为</p>
+<pre><code> var tokenResponse = await client.RequestPasswordTokenAsync(new PasswordTokenRequest
+            {
+                Address = disco.TokenEndpoint,
+                ClientId = &quot;consoleclient&quot;,
+                ClientSecret = &quot;511536EF-F270-4058-80CA-1C89C192F69A&quot;,
+                Scope = &quot;scope1&quot;,
+                Password = &quot;alice&quot;,
+                UserName = &quot;alice&quot;
+
+            });
+</code></pre>
+<p>结束</p>
+
+            </div>
+          </article>
         </div>
-        <div class="row flex-edges">
-  
-  
-</div>
-
+        <div class="paper" data-aos="fade-in">
+          
+            <div class="next-post">
+              <div class="next">
+                下一篇
+              </div>
+              <a href="https://hhanyuqiang.github.io/identityserver4-client-credentials/">
+                <h3 class="post-title">
+                  IdentityServer4客户端授权模式
+                </h3>
+              </a>
+            </div>
+          
+        </div>
+        
       </div>
+
       <div class="sm-12 md-4 col sidebar">
   <div class="paper info-container">
     <img src="https://hhanyuqiang.github.io/images/avatar.png?v=1609202659036" class="no-responsive avatar">
@@ -174,6 +234,8 @@
   </div>
 </div>
 
+
+    </div>
 
     <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
 
