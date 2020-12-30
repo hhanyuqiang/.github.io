@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>IdentityServer4系列 简化模式 | hyq</title>
+<meta name="description" content="温故而知新">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<link rel="shortcut icon" href="https://hhanyuqiang.github.io/favicon.ico?v=1609298353359">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="stylesheet" href="https://unpkg.com/papercss@1.6.1/dist/paper.min.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+<link rel="stylesheet" href="https://hhanyuqiang.github.io/styles/main.css">
+
+
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+  </head>
+  <body>
+  
+    <nav class="navbar border fixed split-nav">
+  <div class="nav-brand">
+    <h3><a href="https://hhanyuqiang.github.io">hyq</a></h3>
+  </div>
+  <div class="collapsible">
+    <input id="collapsible1" type="checkbox" name="collapsible1">
+    <button>
+      <label for="collapsible1">
+        <div class="bar1"></div>
+        <div class="bar2"></div>
+        <div class="bar3"></div>
+      </label>
+    </button>
+    <div class="collapsible-body">
+      <ul class="inline">
+        
+          <li>
+            
+              <a href="/" class="menu">
+                首页
+              </a>
+            
+          </li>
+        
+          <li>
+            
+              <a href="/archives" class="menu">
+                归档
+              </a>
+            
+          </li>
+        
+          <li>
+            
+              <a href="/tags" class="menu">
+                标签
+              </a>
+            
+          </li>
+        
+          <li>
+            
+              <a href="/post/about" class="menu">
+                关于
+              </a>
+            
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div id="top" class="row site">
+      <div class="sm-12 md-8 col">
+        <div class="paper">
+          <article class="article">
+            <h1>IdentityServer4系列 简化模式</h1>
+            <p class="article-meta">
+              2020-12-29
+              
+            </p>
+            
+            <div class="post-content">
+              <p>简化授权流程描述</p>
+<p>（A）客户端携带客户端标识以及重定向URI到授权服务器；</p>
+<p>（B）用户确认是否要授权给客户端；</p>
+<p>（C）授权服务器得到许可后，跳转到指定的重定向地址，并将令牌也包含在了里面；</p>
+<p>（D）客户端携带上次获取到的包含令牌的片段，去请求资源服务器；</p>
+<p>（E）资源服务器会向浏览器返回一个脚本；</p>
+<p>（F）浏览器会根据上一步返回的脚本，去提取在C步骤中获取到的令牌；</p>
+<p>（G）浏览器将令牌推送给客户端。</p>
+<p>修改Idpconfig.cs`<br>
+添加一个Client</p>
+<pre><code>new Client
+                {
+                    ClientName = &quot;MVC website&quot;,
+                    ClientId = &quot;mvcclient&quot;,
+                    // secret for authentication
+                    ClientSecrets =
+                    {
+                        new Secret(&quot;secret2&quot;.Sha256())
+                    },
+
+                    // no interactive user, use the clientid/secret for authentication
+                    AllowedGrantTypes = GrantTypes.Implicit,
+                    //RequireConsent = false,
+                    //RequirePkce = true,
+
+                     RedirectUris = { &quot;https://localhost:8003/signin-oidc&quot; },
+                    //FrontChannelLogoutUri = &quot;https://localhost:44300/signout-oidc&quot;,
+                    PostLogoutRedirectUris = { &quot;https://localhost:8003/signout-callback-oidc&quot; },
+
+                      AllowedScopes = {
+                           IdentityServerConstants.StandardScopes.OpenId,
+                            IdentityServerConstants.StandardScopes.Profile,
+                            IdentityServerConstants.StandardScopes.Email,
+                            IdentityServerConstants.StandardScopes.Phone,
+                         &quot;scope1&quot;
+                     },
+
+                    AllowOfflineAccess = true,
+                }
+</code></pre>
+<p>新建一个MVC Core项目<br>
+修改stratup.cs</p>
+<pre><code>using System.IdentityModel.Tokens.Jwt;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+
+namespace MvcClient
+{
+    public class Startup
+    {
+        public Startup(IConfiguration configuration)
+        {
+            Configuration = configuration;
+        }
+
+        public IConfiguration Configuration { get; }
+
+        // This method gets called by the runtime. Use this method to add services to the container.
+        public void ConfigureServices(IServiceCollection services)
+        {
+            services.AddControllersWithViews();
+            services.AddAuthorization();
+            services.AddAuthentication(options =&gt;
+            {
+                options.DefaultScheme = &quot;Cookies&quot;;
+                options.DefaultChallengeScheme = &quot;oidc&quot;;
+            })
+            .AddCookie(&quot;Cookies&quot;)
+            .AddOpenIdConnect(&quot;oidc&quot;, options =&gt;
+            {
+                options.Authority = &quot;https://localhost:5000&quot;;
+                options.ClientId = &quot;mvcclient&quot;;
+                options.ClientSecret = &quot;secret2&quot;;
+                options.SaveTokens = true;
+                options.GetClaimsFromUserInfoEndpoint = true;
+                options.Scope.Add(&quot;email&quot;);
+                options.Scope.Add(&quot;phone&quot;);
+
+            });
+        }
+
+        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        {
+            if (env.IsDevelopment())
+            {
+                app.UseDeveloperExceptionPage();
+            }
+            else
+            {
+                app.UseExceptionHandler(&quot;/Home/Error&quot;);
+                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+                app.UseHsts();
+            }
+            app.UseHttpsRedirection();
+            app.UseStaticFiles();
+
+            app.UseRouting();
+
+            app.UseCookiePolicy();
+            app.UseAuthentication();
+            app.UseAuthorization();
+
+            app.UseEndpoints(endpoints =&gt;
+            {
+                endpoints.MapControllerRoute(
+                    name: &quot;default&quot;,
+                    pattern: &quot;{controller=Home}/{action=Index}/{id?}&quot;);
+            });
+        }
+    }
+}
+
+</code></pre>
+<p>为HomeControllers的Privacy添加``` `[Authorize]``<br>
+修改Privacy.cshtml</p>
+<pre><code>@{
+    ViewData[&quot;Title&quot;] = &quot;Privacy Policy&quot;;
+}
+&lt;h1&gt;@ViewData[&quot;Title&quot;]&lt;/h1&gt;
+
+&lt;p&gt;Use this page to detail your site's privacy policy.&lt;/p&gt;
+
+@using Microsoft.AspNetCore.Authentication
+
+&lt;h2&gt;Claims&lt;/h2&gt;
+
+&lt;dl&gt;
+    @foreach (var claim in User.Claims)
+    {
+        &lt;dt&gt;@claim.Type&lt;/dt&gt;
+        &lt;dd&gt;@claim.Value&lt;/dd&gt;
+    }
+&lt;/dl&gt;
+
+&lt;h2&gt;Properties&lt;/h2&gt;
+
+&lt;dl&gt;
+    @foreach (var prop in (await Context.AuthenticateAsync()).Properties.Items)
+    {
+        &lt;dt&gt;@prop.Key&lt;/dt&gt;
+        &lt;dd&gt;@prop.Value&lt;/dd&gt;
+    }
+&lt;/dl&gt;
+
+</code></pre>
+
+            </div>
+          </article>
+        </div>
+        <div class="paper" data-aos="fade-in">
+          
+            <div class="next-post">
+              <div class="next">
+                下一篇
+              </div>
+              <a href="https://hhanyuqiang.github.io/lXllogEfc/">
+                <h3 class="post-title">
+                  IdentityServer4使用密码保护API资源
+                </h3>
+              </a>
+            </div>
+          
+        </div>
+        
+      </div>
+
+      <div class="sm-12 md-4 col sidebar">
+  <div class="paper info-container">
+    <img src="https://hhanyuqiang.github.io/images/avatar.png?v=1609298353359" class="no-responsive avatar">
+    <div class="text-muted">温故而知新</div>
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+  </div>
+  <div class="paper">
+    <div class="sidebar-title">
+      最新文章
+    </div>
+    <div class="row">
+      <ul>
+        
+          
+            <li>
+              <a href="https://hhanyuqiang.github.io/q4XgTu1Xt/">IdentityServer4授权码模式</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="https://hhanyuqiang.github.io/aSfZps_OB/">IdentityServer4系列 简化模式</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="https://hhanyuqiang.github.io/lXllogEfc/">IdentityServer4使用密码保护API资源</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="https://hhanyuqiang.github.io/identityserver4-client-credentials/">IdentityServer4客户端授权模式</a>
+            </li>
+          
+        
+      </ul>
+    </div>
+  </div>
+  <div class="paper">
+    <div class="sidebar-title">
+      标签列表
+    </div>
+    <div class="row">
+      
+        <a href="https://hhanyuqiang.github.io/tKVIRz-bz/" class="badge success">
+          identityserver4
+        </a>
+      
+    </div>
+  </div>
+  <div class="paper">
+    
+    Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://hhanyuqiang.github.io/atom.xml" target="_blank">RSS</a>
+  </div>
+</div>
+
+
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+</script>
+
+
+
+
+  </body>
+</html>

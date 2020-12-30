@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://hhanyuqiang.github.io</id>
     <title>hyq</title>
-    <updated>2020-12-29T02:32:49.459Z</updated>
+    <updated>2020-12-30T03:19:17.643Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://hhanyuqiang.github.io"/>
     <link rel="self" href="https://hhanyuqiang.github.io/atom.xml"/>
@@ -10,6 +10,20 @@
     <logo>https://hhanyuqiang.github.io/images/avatar.png</logo>
     <icon>https://hhanyuqiang.github.io/favicon.ico</icon>
     <rights>All rights reserved 2020, hyq</rights>
+    <entry>
+        <title type="html"><![CDATA[IdentityServer4授权码模式]]></title>
+        <id>https://hhanyuqiang.github.io/q4XgTu1Xt/</id>
+        <link href="https://hhanyuqiang.github.io/q4XgTu1Xt/">
+        </link>
+        <updated>2020-12-30T03:18:34.000Z</updated>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[IdentityServer4系列 简化模式]]></title>
+        <id>https://hhanyuqiang.github.io/aSfZps_OB/</id>
+        <link href="https://hhanyuqiang.github.io/aSfZps_OB/">
+        </link>
+        <updated>2020-12-29T02:43:37.000Z</updated>
+    </entry>
     <entry>
         <title type="html"><![CDATA[IdentityServer4使用密码保护API资源]]></title>
         <id>https://hhanyuqiang.github.io/lXllogEfc/</id>
