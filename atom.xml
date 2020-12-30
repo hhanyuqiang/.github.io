@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://hhanyuqiang.github.io</id>
     <title>hyq</title>
-    <updated>2020-12-30T05:03:29.186Z</updated>
+    <updated>2020-12-30T05:11:19.170Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://hhanyuqiang.github.io"/>
     <link rel="self" href="https://hhanyuqiang.github.io/atom.xml"/>
@@ -10,13 +10,6 @@
     <logo>https://hhanyuqiang.github.io/images/avatar.png</logo>
     <icon>https://hhanyuqiang.github.io/favicon.ico</icon>
     <rights>All rights reserved 2020, hyq</rights>
-    <entry>
-        <title type="html"><![CDATA[about]]></title>
-        <id>https://hhanyuqiang.github.io/EztDt1WUZ/</id>
-        <link href="https://hhanyuqiang.github.io/EztDt1WUZ/">
-        </link>
-        <updated>2020-12-30T03:50:31.000Z</updated>
-    </entry>
     <entry>
         <title type="html"><![CDATA[IdentityServer4授权码模式]]></title>
         <id>https://hhanyuqiang.github.io/q4XgTu1Xt/</id>

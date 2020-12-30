@@ -1,111 +1,98 @@
+<!DOCTYPE html>
 <html>
   <head>
-    <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta charset="utf-8" >
+
 <title>IdentityServer4客户端授权模式 | hyq</title>
-<link rel="shortcut icon" href="https://hhanyuqiang.github.io/favicon.ico?v=1609304604966">
-<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<meta name="description" content="温故而知新">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<link rel="shortcut icon" href="https://hhanyuqiang.github.io/favicon.ico?v=1609305029285">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="stylesheet" href="https://unpkg.com/papercss@1.6.1/dist/paper.min.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
 <link rel="stylesheet" href="https://hhanyuqiang.github.io/styles/main.css">
-<link rel="alternate" type="application/atom+xml" title="IdentityServer4客户端授权模式 | hyq - Atom Feed" href="https://hhanyuqiang.github.io/atom.xml">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
 
 
-
-    <meta name="description" content=".NET Core与.NET Framework对接IdentityServer4
-
-
-创建IdentityServer4项目
-*
-
-修改Config.cs
-
-注意
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
 
 
-修改Startup.cs
-修改launchSettings.json
-..." />
-    <meta name="keywords" content="identityserver4" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
-    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
   </head>
   <body>
-    <div class="main">
-      <div class="main-content">
-        <div class="site-header">
-  <a href="https://hhanyuqiang.github.io">
-  <img class="avatar" src="https://hhanyuqiang.github.io/images/avatar.png?v=1609304604966" alt="">
-  </a>
-  <h1 class="site-title">
-    hyq
-  </h1>
-  <p class="site-description">
-    温故而知新
-  </p>
-  <div class="menu-container">
-    
-      
-        <a href="https://hhanyuqiang.github.io/archives" class="menu">
-          首页
-        </a>
-      
-    
-      
-        <a href="https://hhanyuqiang.github.io/archives" class="menu">
-          归档
-        </a>
-      
-    
-      
-        <a href="/tags" class="menu">
-          标签
-        </a>
-      
-    
-      
-        <a href="/post/about" class="menu">
-          关于
-        </a>
-      
-    
+  
+    <nav class="navbar border fixed split-nav">
+  <div class="nav-brand">
+    <h3><a href="https://hhanyuqiang.github.io">hyq</a></h3>
   </div>
-  <div class="social-container">
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
+  <div class="collapsible">
+    <input id="collapsible1" type="checkbox" name="collapsible1">
+    <button>
+      <label for="collapsible1">
+        <div class="bar1"></div>
+        <div class="bar2"></div>
+        <div class="bar3"></div>
+      </label>
+    </button>
+    <div class="collapsible-body">
+      <ul class="inline">
+        
+          <li>
+            
+              <a href="https://hhanyuqiang.github.io/archives" class="menu">
+                首页
+              </a>
+            
+          </li>
+        
+          <li>
+            
+              <a href="https://hhanyuqiang.github.io/archives" class="menu">
+                归档
+              </a>
+            
+          </li>
+        
+          <li>
+            
+              <a href="/tags" class="menu">
+                标签
+              </a>
+            
+          </li>
+        
+          <li>
+            
+              <a href="/about" class="menu">
+                关于
+              </a>
+            
+          </li>
+        
+      </ul>
+    </div>
   </div>
-</div>
+</nav>
 
-        <div class="post-detail">
-          <article class="post">
-            <h2 class="post-title">
-              IdentityServer4客户端授权模式
-            </h2>
-            <div class="post-info">
-              <span>
-                2020-12-25
-              </span>
-              <span>
-                8 min read
-              </span>
+    <div id="top" class="row site">
+      <div class="sm-12 md-8 col">
+        <div class="paper">
+          <article class="article">
+            <h1>IdentityServer4客户端授权模式</h1>
+            <p class="article-meta">
+              2020-12-25
               
-                <a href="https://hhanyuqiang.github.io/tKVIRz-bz/" class="post-tag">
-                  # identityserver4
+                <a href="https://hhanyuqiang.github.io/tKVIRz-bz/" class="badge success">
+                  identityserver4
                 </a>
               
-            </div>
+            </p>
             
-            <div class="post-content-wrapper">
-              <div class="post-content">
-                <p>.NET Core与.NET Framework对接IdentityServer4</p>
+            <div class="post-content">
+              <p>.NET Core与.NET Framework对接IdentityServer4</p>
 <!-- more -->
 <p><ul class="markdownIt-TOC">
 <li><a href="#%E5%88%9B%E5%BB%BAidentityserver4%E9%A1%B9%E7%9B%AE">创建IdentityServer4项目</a><br>
@@ -514,106 +501,104 @@ public static IEnumerable&lt;Client&gt; Clients =&gt;
 #最后<br>
 <img src="https://hhanyuqiang.github.io/post-images/1608883713128.jpg" alt="" loading="lazy"></p>
 
-              </div>
-              <div class="toc-container">
-                <ul class="markdownIt-TOC">
-<li><a href="#%E5%88%9B%E5%BB%BAidentityserver4%E9%A1%B9%E7%9B%AE">创建IdentityServer4项目</a><br>
-*
-<ul>
-<li><a href="#%E4%BF%AE%E6%94%B9configcs">修改Config.cs</a>
-<ul>
-<li><a href="#%E6%B3%A8%E6%84%8F">注意</a></li>
-</ul>
-</li>
-<li><a href="#%E4%BF%AE%E6%94%B9startupcs">修改Startup.cs</a></li>
-<li><a href="#%E4%BF%AE%E6%94%B9launchsettingsjson">修改launchSettings.json</a></li>
-</ul>
-</li>
-<li><a href="#%E5%88%9B%E5%BB%BA%E5%AE%A2%E6%88%B7%E7%AB%AF-%E6%8E%A7%E5%88%B6%E5%8F%B0%E9%A1%B9%E7%9B%AEconsoleclient">创建客户端 控制台项目consoleclient</a><br>
-*
-<ul>
-<li><a href="#%E5%BC%80%E5%A7%8B%E4%BF%AE%E6%94%B9programcs">开始修改Program.cs</a></li>
-</ul>
-</li>
-<li><a href="#%E6%B7%BB%E5%8A%A0coreapi%E9%A1%B9%E7%9B%AEnet-core">添加CoreAPI项目(.NET CORE)</a><br>
-*
-<ul>
-<li><a href="#%E4%BF%AE%E6%94%B9startupcs-2">修改Startup.cs</a></li>
-<li><a href="#%E4%BF%AE%E6%94%B9configureservices">修改ConfigureServices</a></li>
-<li><a href="#%E4%BF%AE%E6%94%B9weatherforecastcontroller">修改WeatherForecastController</a></li>
-<li><a href="#%E5%86%8D%E5%9B%9E%E5%88%B0consoleclient%E9%A1%B9%E7%9B%AE-%E4%BF%AE%E6%94%B9program">再回到ConsoleClient项目 修改Program</a></li>
-</ul>
-</li>
-<li><a href="#%E5%88%9B%E5%BB%BA%E9%A1%B9%E7%9B%AEnet4apinet-framework">创建项目Net4Api（.NET Framework）</a><br>
-*
-<ul>
-<li><a href="#%E6%B7%BB%E5%8A%A0startupcs">添加Startup.cs</a></li>
-<li><a href="#%E6%B7%BB%E5%8A%A0identitycontroller">添加IdentityController</a></li>
-<li><a href="#%E4%BF%AE%E6%94%B9consoleclient%E9%A1%B9%E7%9B%AE">修改ConsoleClient项目</a></li>
-<li><a href="#%E4%BF%AE%E6%94%B9%E6%8E%88%E6%9D%83%E4%B8%AD%E5%BF%83startup%E7%9A%84configureservices%E6%96%B9%E6%B3%95">修改授权中心Startup.的ConfigureServices方法</a></li>
-</ul>
-</li>
-</ul>
-
-              </div>
             </div>
           </article>
         </div>
-
+        <div class="paper" data-aos="fade-in">
+          
+        </div>
         
+      </div>
 
+      <div class="sm-12 md-4 col sidebar">
+  <div class="paper info-container">
+    <img src="https://hhanyuqiang.github.io/images/avatar.png?v=1609305029285" class="no-responsive avatar">
+    <div class="text-muted">温故而知新</div>
+    <div class="social-container">
+      
         
-
-        <div class="site-footer">
-  
-    Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
-  <a class="rss" href="https://hhanyuqiang.github.io/atom.xml" target="_blank">
-    <i class="ri-rss-line"></i> RSS
-  </a>
+          <a href="https://github.com/" target="_blank">
+            <i class="fab fa-github"></i>
+          </a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+  </div>
+  <div class="paper">
+    <div class="sidebar-title">
+      最新文章
+    </div>
+    <div class="row">
+      <ul>
+        
+          
+            <li>
+              <a href="https://hhanyuqiang.github.io/q4XgTu1Xt/">IdentityServer4授权码模式</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="https://hhanyuqiang.github.io/aSfZps_OB/">IdentityServer4系列 简化模式</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="https://hhanyuqiang.github.io/lXllogEfc/">IdentityServer4使用密码保护API资源</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="https://hhanyuqiang.github.io/identityserver4-client-credentials/">IdentityServer4客户端授权模式</a>
+            </li>
+          
+        
+      </ul>
+    </div>
+  </div>
+  <div class="paper">
+    <div class="sidebar-title">
+      标签列表
+    </div>
+    <div class="row">
+      
+        <a href="https://hhanyuqiang.github.io/tKVIRz-bz/" class="badge success">
+          identityserver4
+        </a>
+      
+    </div>
+  </div>
+  <div class="paper">
+    
+    Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://hhanyuqiang.github.io/atom.xml" target="_blank">RSS</a>
+  </div>
 </div>
 
-      </div>
+
     </div>
 
-    <script>
-      hljs.initHighlightingOnLoad()
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
 
-      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+<script type="application/javascript">
 
-      // This should probably be throttled.
-      // Especially because it triggers during smooth scrolling.
-      // https://lodash.com/docs/4.17.10#throttle
-      // You could do like...
-      // window.addEventListener("scroll", () => {
-      //    _.throttle(doThatStuff, 100);
-      // });
-      // Only not doing it here to keep this Pen dependency-free.
+AOS.init();
 
-      window.addEventListener("scroll", event => {
-        let fromTop = window.scrollY;
+hljs.initHighlightingOnLoad()
 
-        mainNavLinks.forEach((link, index) => {
-          let section = document.getElementById(decodeURI(link.hash).substring(1));
-          let nextSection = null
-          if (mainNavLinks[index + 1]) {
-            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
-          }
-          if (section.offsetTop <= fromTop) {
-            if (nextSection) {
-              if (nextSection.offsetTop > fromTop) {
-                link.classList.add("current");
-              } else {
-                link.classList.remove("current");    
-              }
-            } else {
-              link.classList.add("current");
-            }
-          } else {
-            link.classList.remove("current");
-          }
-        });
-      });
+</script>
 
-    </script>
+
+
+
   </body>
 </html>
