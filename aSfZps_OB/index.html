@@ -4,90 +4,101 @@
     <meta charset="utf-8" >
 
 <title>IdentityServer4系列 简化模式 | hyq</title>
-<meta name="description" content="温故而知新">
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<link rel="shortcut icon" href="https://hhanyuqiang.github.io/favicon.ico?v=1609305029285">
 
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-<link rel="stylesheet" href="https://unpkg.com/papercss@1.6.1/dist/paper.min.css" />
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+<link rel="shortcut icon" href="https://hhanyuqiang.github.io/favicon.ico?v=1609309999704">
 <link rel="stylesheet" href="https://hhanyuqiang.github.io/styles/main.css">
 
 
-<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
-
 
 <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
 
 
+
+    <meta name="description" content="简化授权流程描述
+（A）客户端携带客户端标识以及重定向URI到授权服务器；
+（B）用户确认是否要授权给客户端；
+（C）授权服务器得到许可后，跳转到指定的重定向地址，并将令牌也包含在了里面；
+（D）客户端携带上次获取到的包含令牌的片段，去请求..." />
+    <meta name="keywords" content="" />
   </head>
   <body>
-  
-    <nav class="navbar border fixed split-nav">
-  <div class="nav-brand">
-    <h3><a href="https://hhanyuqiang.github.io">hyq</a></h3>
-  </div>
-  <div class="collapsible">
-    <input id="collapsible1" type="checkbox" name="collapsible1">
-    <button>
-      <label for="collapsible1">
-        <div class="bar1"></div>
-        <div class="bar2"></div>
-        <div class="bar3"></div>
-      </label>
-    </button>
-    <div class="collapsible-body">
-      <ul class="inline">
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://hhanyuqiang.github.io">
+        <img src="https://hhanyuqiang.github.io/images/avatar.png?v=1609309999704" class="site-logo">
+        <h1 class="site-title">hyq</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
         
-          <li>
-            
-              <a href="https://hhanyuqiang.github.io/archives" class="menu">
-                首页
-              </a>
-            
-          </li>
+          <a href="https://hhanyuqiang.github.io" class="site-nav">
+            首页
+          </a>
         
-          <li>
-            
-              <a href="https://hhanyuqiang.github.io/archives" class="menu">
-                归档
-              </a>
-            
-          </li>
+      
         
-          <li>
-            
-              <a href="/tags" class="menu">
-                标签
-              </a>
-            
-          </li>
+          <a href="https://hhanyuqiang.github.io/archives" class="site-nav">
+            归档
+          </a>
         
-          <li>
-            
-              <a href="/about" class="menu">
-                关于
-              </a>
-            
-          </li>
+      
         
-      </ul>
+          <a href="https://hhanyuqiang.github.io/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="https://hhanyuqiang.github.io/ORPlH10yU" class="site-nav">
+            关于
+          </a>
+        
+      
     </div>
   </div>
-</nav>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      温故而知新
+    </div>
+    <div class="site-footer">
+      
+    Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://hhanyuqiang.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
 
-    <div id="top" class="row site">
-      <div class="sm-12 md-8 col">
-        <div class="paper">
-          <article class="article">
-            <h1>IdentityServer4系列 简化模式</h1>
-            <p class="article-meta">
-              2020-12-29
-              
-            </p>
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">IdentityServer4系列 简化模式</h2>
+            <div class="post-date">2020-12-29</div>
             
-            <div class="post-content">
+            <div class="post-content" v-pre>
               <p>简化授权流程描述</p>
 <p>（A）客户端携带客户端标识以及重定向URI到授权服务器；</p>
 <p>（B）用户确认是否要授权给客户端；</p>
@@ -239,111 +250,41 @@ namespace MvcClient
 </code></pre>
 
             </div>
-          </article>
-        </div>
-        <div class="paper" data-aos="fade-in">
-          
-            <div class="next-post">
-              <div class="next">
-                下一篇
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://hhanyuqiang.github.io/lXllogEfc/">
+                  <h3 class="post-title">
+                    IdentityServer4使用密码保护API资源
+                  </h3>
+                </a>
               </div>
-              <a href="https://hhanyuqiang.github.io/lXllogEfc/">
-                <h3 class="post-title">
-                  IdentityServer4使用密码保护API资源
-                </h3>
-              </a>
-            </div>
-          
+            
+
+            
+
+          </div>
+
         </div>
-        
       </div>
-
-      <div class="sm-12 md-4 col sidebar">
-  <div class="paper info-container">
-    <img src="https://hhanyuqiang.github.io/images/avatar.png?v=1609305029285" class="no-responsive avatar">
-    <div class="text-muted">温故而知新</div>
-    <div class="social-container">
-      
-        
-          <a href="https://github.com/" target="_blank">
-            <i class="fab fa-github"></i>
-          </a>
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-    </div>
-  </div>
-  <div class="paper">
-    <div class="sidebar-title">
-      最新文章
-    </div>
-    <div class="row">
-      <ul>
-        
-          
-            <li>
-              <a href="https://hhanyuqiang.github.io/q4XgTu1Xt/">IdentityServer4授权码模式</a>
-            </li>
-          
-        
-          
-            <li>
-              <a href="https://hhanyuqiang.github.io/aSfZps_OB/">IdentityServer4系列 简化模式</a>
-            </li>
-          
-        
-          
-            <li>
-              <a href="https://hhanyuqiang.github.io/lXllogEfc/">IdentityServer4使用密码保护API资源</a>
-            </li>
-          
-        
-          
-            <li>
-              <a href="https://hhanyuqiang.github.io/identityserver4-client-credentials/">IdentityServer4客户端授权模式</a>
-            </li>
-          
-        
-      </ul>
-    </div>
-  </div>
-  <div class="paper">
-    <div class="sidebar-title">
-      标签列表
-    </div>
-    <div class="row">
-      
-        <a href="https://hhanyuqiang.github.io/tKVIRz-bz/" class="badge ">
-          identityserver4
-        </a>
-      
-    </div>
-  </div>
-  <div class="paper">
-    
-    Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://hhanyuqiang.github.io/atom.xml" target="_blank">RSS</a>
-  </div>
-</div>
-
-
     </div>
 
     <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
-
 <script type="application/javascript">
 
 AOS.init();
 
-hljs.initHighlightingOnLoad()
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
 
 </script>
+
+
 
 
 
