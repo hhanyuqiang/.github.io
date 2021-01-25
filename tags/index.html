@@ -9,7 +9,7 @@
 <meta name="description" content="温故而知新">
 <meta name="theme-color" content="#000">
 <title>hyq</title>
-<link rel="shortcut icon" href="/favicon.ico?v=1609383599930">
+<link rel="shortcut icon" href="/favicon.ico?v=1611565990021">
 <link rel="stylesheet" href="/media/css/pisces.css">
 <link rel="stylesheet" href="/media/fonts/font-awesome.css">
 <link
@@ -166,7 +166,7 @@
     <div class="sidebar-item-box">
       <a href="/archives/">
         
-        <span class="site-item-stat-count">4</span>
+        <span class="site-item-stat-count">6</span>
         <span class="site-item-stat-name language" data-lan="article">文章</span>
       </a>
     </div>
@@ -231,6 +231,10 @@
   <div class="tag-cloud-list" id="tags">
     
       
+      
+        
+      
+        
       
         
           
@@ -532,6 +536,176 @@
     <div class="result" id="result">
       
       <div class="item">
+        <a class="result-title" style="opacity: 0;" href="https://hhanyuqiang.github.io/D-_mjmTQ4/"" data-c="
+          &lt;p&gt;公司有微信小程序及公众号，使用的授权还不是很合适&lt;br&gt;
+添加UserThirdInfo&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;  public class UserThirdInfo
+    {
+        public int Id { get; set; }
+        public int UserId { get; set; }
+        public string ThirdId { get; set; }
+        public DateTime AuthorizedDate { get; set; }
+        public TimeSpan AuthorizedTime { get; set; }
+    }
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;修改OAuthMemoryData.cs&lt;br&gt;
+引入sqlsugarcore&lt;br&gt;
+我觉得这个简单所以用这个&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;public class OAuthMemoryData
+    {
+
+        //创建SqlSugarClient 
+        public static SqlSugarClient GetInstance()
+        {
+            var db = new SqlSugarClient(new ConnectionConfig()
+            {
+                ConnectionString = &amp;quot;xxxxxxxx&amp;quot;,//连接符字串
+                DbType = DbType.SqlServer,
+                IsAutoCloseConnection = true,
+                InitKeyType = InitKeyType.Attribute//从特性读取主键自增信息
+            });
+            return db;
+        }
+
+        public static UserInfo GetUserByUserName(string userName)
+        {
+            var userInfo = new UserInfo
+            {
+                Email = &amp;quot;hhanyuqiang@outlook.com&amp;quot;,
+                Id = 1,
+                LoginName = &amp;quot;hhanyuqiang&amp;quot;,
+                Name = &amp;quot;韩玉强&amp;quot;,
+                Password = &amp;quot;xx&amp;quot;,
+                Status = 1,
+                Tel = &amp;quot;18310810&amp;quot;
+            };
+            return userInfo;
+        }
+
+        /// &amp;lt;summary&amp;gt;
+        /// 微信授权模式
+        /// &amp;lt;/summary&amp;gt;
+        /// &amp;lt;returns&amp;gt;&amp;lt;/returns&amp;gt;
+        public static UserInfo GetWeiXinOpenIdUsers(string openid)
+        {
+            var db = GetInstance();
+            var userThird = db.Queryable&amp;lt;UserThirdInfo&amp;gt;().First(it =&amp;gt; it.ThirdId == openid);
+            if (userThird == null) return null;
+            return db.Queryable&amp;lt;UserInfo&amp;gt;().First(it =&amp;gt; it.Id == userThird.Id);
+        }
+
+        public static UserInfo CreateUser(string openid)
+        {
+            var db = GetInstance();
+            var UserInfo = db.Insertable(new UserInfo { LoginName = openid, Email = openid + &amp;quot;@qq.com&amp;quot;, Password = &amp;quot;xxx&amp;quot; }).ExecuteReturnEntity();
+            var userThirdId = db.Insertable(new UserThirdInfo { AuthorizedDate = DateTime.Now, AuthorizedTime = DateTime.Now.TimeOfDay, UserId = UserInfo.Id, ThirdId = openid }).ExecuteReturnIdentity();
+
+            return UserInfo;
+        }
+    }
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;commen添加GrantTypeConstants.cs&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;  public static ICollection&amp;lt;string&amp;gt; ResourceWeixinOpen =&amp;gt; new string[3]
+       {
+            &amp;quot;wxappletsgrant&amp;quot;,
+            &amp;quot;password&amp;quot;,
+            &amp;quot;client_credentials&amp;quot;
+       };
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;修改config.cs&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;AllowedGrantTypes=GrantTypeConstants.ResourceWXappletsGrantAndResourceOwnerPasswordAndClientCredentials,
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;创建WXAppletsGrantValidator类继承IExtensionGrantValidator并编辑&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt; public class WXAppletsGrantValidator : IExtensionGrantValidator
+    {
+        public string GrantType =&amp;gt; &amp;quot;wxappletsgrant&amp;quot;;
+
+        public async Task ValidateAsync(ExtensionGrantValidationContext context)
+        {
+            try
+            {
+                #region 参数获取 直接把授权后的openId 拿过来授权是不安全的，这里仅仅是一个Demo
+                //var openId = context.Request.Raw[ParamConstants.OpenId];
+                //var unionId = context.Request.Raw[ParamConstants.UnionId];
+                //var userName = context.Request.Raw[ParamConstants.UserName];
+                #endregion
+                var openId = &amp;quot;&amp;quot;;
+                var unionId = &amp;quot;&amp;quot;;
+                #region 通过openId和unionId 参数来进行数据库的相关验证
+                var claimList = await ValidateUserAsync(openId, unionId);
+                #endregion
+
+                #region 授权通过
+                //授权通过返回
+                context.Result = new GrantValidationResult
+                (
+                    subject: openId,
+                    authenticationMethod: &amp;quot;custom&amp;quot;,
+                    claims: claimList.ToArray()
+                );
+                #endregion
+            }
+            catch (Exception ex)
+            {
+                context.Result = new GrantValidationResult()
+                {
+                    IsError = true,
+                    Error = ex.Message
+                };
+            }
+        }
+
+        #region Private Method
+        /// &amp;lt;summary&amp;gt;
+        /// 验证用户
+        /// &amp;lt;/summary&amp;gt;
+        /// &amp;lt;param name=&amp;quot;loginName&amp;quot;&amp;gt;&amp;lt;/param&amp;gt;
+        /// &amp;lt;param name=&amp;quot;password&amp;quot;&amp;gt;&amp;lt;/param&amp;gt;
+        /// &amp;lt;returns&amp;gt;&amp;lt;/returns&amp;gt;
+        private async Task&amp;lt;List&amp;lt;Claim&amp;gt;&amp;gt; ValidateUserAsync(string openId, string unionId)
+        {
+            openId = &amp;quot;xxppxxppxxoo&amp;quot;;
+            //TODO 这里可以通过openId 和unionId 来查询用户信息，我这里为了方便测试还是直接写测试的openId 相关信息用户
+            var user = OAuthMemoryData.GetWeiXinOpenIdUsers(openId);
+
+            if (user == null)
+            {
+                //注册用户
+                OAuthMemoryData.CreateUser(openId);
+            }
+
+            return new List&amp;lt;Claim&amp;gt;()
+            {
+              new Claim(ClaimTypes.Name, $&amp;quot;{user.Name}&amp;quot;),
+                new Claim(EnumUserClaim.LoginName.ToString(),user.LoginName),
+                new Claim(EnumUserClaim.Id.ToString(),user.Id.ToString()),
+                new Claim(EnumUserClaim.Email.ToString(),user.Email),
+                new Claim(EnumUserClaim.Tel.ToString(),user.Tel),
+                new Claim(EnumUserClaim.Status.ToString(),user.Status.ToString())
+            };
+        }
+        #endregion
+    }
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Startup.cs的ConfigureServices加上&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;  builder.AddExtensionGrantValidator&amp;lt;WXAppletsGrantValidator&amp;gt;();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;启动调试&lt;br&gt;
+&lt;img src=&#34;https://hhanyuqiang.github.io/post-images/1611565917581.jpg&#34; alt=&#34;&#34; loading=&#34;lazy&#34;&gt;&lt;br&gt;
+大功告成&lt;/p&gt;
+">IdentityServer4自定义授权模式</a>
+      </div>
+      
+      <div class="item">
+        <a class="result-title" style="opacity: 0;" href="https://hhanyuqiang.github.io/QZWzE2mKC/"" data-c="
+          &lt;h2 id=&#34;1-客户端授权模式&#34;&gt;1. &lt;a href=&#34;https://hhanyuqiang.github.io/identityserver4-client-credentials/&#34;&gt;客户端授权模式&lt;/a&gt;&lt;/h2&gt;
+&lt;h2 id=&#34;2-密码授权模式&#34;&gt;2. &lt;a href=&#34;https://hhanyuqiang.github.io/lXllogEfc/&#34;&gt;密码授权模式&lt;/a&gt;&lt;/h2&gt;
+&lt;h2 id=&#34;3-简化授权模式&#34;&gt;3. &lt;a href=&#34;https://hhanyuqiang.github.io/aSfZps_OB/&#34;&gt;简化授权模式&lt;/a&gt;&lt;/h2&gt;
+&lt;h2 id=&#34;3-自定义授权模式&#34;&gt;3. &lt;a href=&#34;https://hhanyuqiang.github.io/aSfZps_OB/&#34;&gt;自定义授权模式&lt;/a&gt;&lt;/h2&gt;
+">IdentityServer系列</a>
+      </div>
+      
+      <div class="item">
         <a class="result-title" style="opacity: 0;" href="https://hhanyuqiang.github.io/q4XgTu1Xt/"" data-c="
           &lt;p&gt;授权码授权流程描述&lt;/p&gt;
 &lt;p&gt;（A）用户访问第三方应用，第三方应用将用户导向认证服务器；&lt;/p&gt;
@@ -708,64 +882,288 @@ namespace MvcClient
 &lt;li&gt;授权服务器验证客户端身份，同时也验证资源所有者的凭据，如果都通过，则签发访问令牌。&lt;/li&gt;
 &lt;/ul&gt;
 &lt;!-- more --&gt;
-&lt;p&gt;开始修改代码&lt;br&gt;
-只需要将Idp项目的Config.cs文件的Clients方法修改为&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;       public static IEnumerable&amp;lt;Client&amp;gt; Clients =&amp;gt;
-            new Client[]
-            {
-                //Client Credentials
+&lt;p&gt;与客户授权模式的差异在参数增加了username以及password，在取得token时一并验证username及password&lt;br&gt;
+开始修改代码&lt;br&gt;
+Config.cs&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt; public class Config
+    {
+        public static IEnumerable&amp;lt;IdentityResource&amp;gt; IdentityResources =&amp;gt;
+        new IdentityResource[]
+        {
+                 new IdentityResources.OpenId(),
+                 new IdentityResources.Profile(),
+        };
+
+        //定义ApiScopes
+        public static IEnumerable&amp;lt;ApiScope&amp;gt; ApiScopes =&amp;gt;
+
+           new ApiScope[]
+               {
+                     // invoice API specific scopes
+                     new ApiScope(name: &amp;quot;invoice.read&amp;quot;,   displayName: &amp;quot;Reads your invoices.&amp;quot;),
+               };
+        //定义ApiResources
+        public static IEnumerable&amp;lt;ApiResource&amp;gt; ApiResources =&amp;gt;
+           new ApiResource[]
+           {
+                new ApiResource(&amp;quot;invoice&amp;quot;, &amp;quot;Invoice API&amp;quot;)
+                {
+                    Scopes = { &amp;quot;invoice.read&amp;quot; }
+                }
+           };
+        //定义Clients
+        public static IEnumerable&amp;lt;Client&amp;gt; Clients =&amp;gt;
+           new Client[]
+           {
+                 // m2m client credentials flow client
                 new Client
                 {
-                    ClientId = &amp;quot;consoleclient&amp;quot;,
+                    ClientId = &amp;quot;consoleapp&amp;quot;,
+                    ClientName = &amp;quot;Client Credentials Client&amp;quot;, AllowedGrantTypes=IdentityServer4.Models.GrantTypes.ResourceOwnerPasswordAndClientCredentials ,
+
+                    ClientSecrets = { new Secret(&amp;quot;consoleappsecrets&amp;quot;.Sha256()) },
+                    AllowedScopes = {
+                            IdentityServerConstants.StandardScopes.OpenId,
+                            IdentityServerConstants.StandardScopes.Profile,
+                            IdentityServerConstants.StandardScopes.Email,
+                            IdentityServerConstants.StandardScopes.Phone,
+                            StandardScopes.OfflineAccess,//如果要获取refresh_tokens ,必须在scopes中加上OfflineAccess
+                             &amp;quot;invoice.read&amp;quot;
+                    },
+                    RequireConsent=false,// 是否需要同意授权 （默认是false）
+                    AlwaysIncludeUserClaimsInIdToken=true,//所有Scopes
+                    AllowOfflineAccess = true,//如果要获取refresh_tokens ,必须把AllowOfflineAccess设置为true
+                    RefreshTokenUsage = TokenUsage.ReUse,
+                    AccessTokenLifetime = 18000,
+                    RefreshTokenExpiration = TokenExpiration.Absolute,
+                    AbsoluteRefreshTokenLifetime = 300,
+                },
+           };
+    }
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;添加DTO文件夹并添加UserInfo实体&lt;br&gt;
+添加OAuthMemoryData.cs&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;   public static UserInfo GetUserByUserName(string userName)
+        {
+            var userInfo = new UserInfo
+            {
+                Email = &amp;quot;hhanyuqiang@outlook.com&amp;quot;,
+                Id = 1,
+                LoginName = &amp;quot;hhanyuqiang&amp;quot;,
+                Name = &amp;quot;韩玉强&amp;quot;,
+                Password = &amp;quot;xx&amp;quot;,
+                Status = 1,
+                Tel = &amp;quot;18310810&amp;quot;
+            };
+            return userInfo;
+        }
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;添加Commen文件夹并添加EnumUserClaim.cs&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;  public enum EnumUserClaim
+    {
+        Id,
+        LoginName,
+        Name,
+        Email,
+        Tel,
+        Status
+    }
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;添加Validator文件夹&lt;br&gt;
+添加类ResourceOwnerPasswordValidator并继承IResourceOwnerPasswordValidator&lt;br&gt;
+代码&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt; public async Task ValidateAsync(ResourceOwnerPasswordValidationContext context)
+        {
+
+            try
+            {
+                var userName = context.UserName;
+                var password = context.Password;
+                //验证用户,这么可以到数据库里面验证用户名和密码是否正确
+                var claimList = await ValidateUserAsync(userName, password);
+                // 验证账号
+                context.Result = new GrantValidationResult
+                (
+                    subject: &amp;quot;111&amp;quot;,
+                    authenticationMethod: &amp;quot;custom&amp;quot;,
+                    claims: claimList.ToArray()
+                );
+            }
+            catch (Exception ex)
+            {
+                //验证异常结果
+                context.Result = new GrantValidationResult()
+                {
+                    IsError = true,
+                    Error = ex.Message
+                };
+            }
+        }
+
+        #region Private Method
+        /// &amp;lt;summary&amp;gt;
+        /// 验证用户
+        /// &amp;lt;/summary&amp;gt;
+        /// &amp;lt;param name=&amp;quot;loginName&amp;quot;&amp;gt;&amp;lt;/param&amp;gt;
+        /// &amp;lt;param name=&amp;quot;password&amp;quot;&amp;gt;&amp;lt;/param&amp;gt;
+        /// &amp;lt;returns&amp;gt;&amp;lt;/returns&amp;gt;
+        private async Task&amp;lt;List&amp;lt;Claim&amp;gt;&amp;gt; ValidateUserAsync(string loginName, string password)
+        {
+            //TODO 这里可以通过用户名和密码到数据库中去验证是否存在
+            var user = OAuthMemoryData.GetUserByUserName(loginName);
+            if (user == null)
+                throw new Exception(&amp;quot;登录失败，用户名和密码不正确&amp;quot;);
+            return new List&amp;lt;Claim&amp;gt;()
+            {
+                new Claim(ClaimTypes.Name, $&amp;quot;{user.Name}&amp;quot;),
+                new Claim(EnumUserClaim.LoginName.ToString(),user.LoginName),
+                new Claim(EnumUserClaim.Id.ToString(),user.Id.ToString()),
+                new Claim(EnumUserClaim.Email.ToString(),user.Email),
+                new Claim(EnumUserClaim.Tel.ToString(),user.Tel),
+                new Claim(EnumUserClaim.Status.ToString(),user.Status.ToString())
+            };
+        }
+
+
+        #endregion
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;在JWT加入自定义的內容&lt;br&gt;
+添加ProfileService文件夹并且添加CProfileService.cs继承IProfileService&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;public async Task GetProfileDataAsync(ProfileDataRequestContext context)
+        {
+
+            var claims = context.Subject.Claims.ToList();
+
+            context.IssuedClaims = claims.ToList();
+
+        }
+
+        public async Task IsActiveAsync(IsActiveContext context)
+        {
+            context.IsActive = true;
+        }
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;最后Startup&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;  .AddResourceOwnerValidator&amp;lt;ResourceOwnerPasswordValidator&amp;gt;();builder.AddProfileService&amp;lt;CProfileService&amp;gt;();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;接下来修改webapi&lt;br&gt;
+添加UserController并且修改&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;    [Route(&amp;quot;[controller]&amp;quot;)]
+    [Authorize]
+    [Authorize]
+    public class UserController : ControllerBase
+    {
+        [HttpGet]
+        public async Task&amp;lt;object&amp;gt; Get()
+        {
+            var userId = User.Id();
+            return new
+            {
+                name = User.Name(),
+                userId = userId,
+                loginName = User.LoginName(),
+                email = User.Email(),
+                tel = User.Tel(),
+                status=User.Status()
+            };
+        }
+    }
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;添加Extension文件夹并添加UserIdentityExtension.cs&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;  public static class UserIdentityExtension
+    {
+        /// &amp;lt;summary&amp;gt;
+        /// 获得用户的Name
+        /// &amp;lt;/summary&amp;gt;
+        /// &amp;lt;param name=&amp;quot;this&amp;quot;&amp;gt;&amp;lt;/param&amp;gt;
+        /// &amp;lt;returns&amp;gt;&amp;lt;/returns&amp;gt;
+        public static string LoginName(this ClaimsPrincipal @this)
+        {
+            return @this?.Identity?.Name;
+        }
+
+        /// &amp;lt;summary&amp;gt;
+        /// 获得DisplayName
+        /// &amp;lt;/summary&amp;gt;
+        /// &amp;lt;param name=&amp;quot;this&amp;quot;&amp;gt;&amp;lt;/param&amp;gt;
+        /// &amp;lt;returns&amp;gt;&amp;lt;/returns&amp;gt;
+        public static string Name(this ClaimsPrincipal @this)
+        {
+            var value = @this?.Claims?.FirstOrDefault(oo =&amp;gt; oo.Type == &amp;quot;Name&amp;quot;)?.Value;
+            return value;
+        }
+
+        public static string Id(this ClaimsPrincipal @this)
+        {
+            return @this?.Claims?.FirstOrDefault(oo =&amp;gt; oo.Type == &amp;quot;Id&amp;quot;)?.Value;
+        }
+
+        public static string Email(this ClaimsPrincipal @this)
+        {
+            return @this?.Claims?.FirstOrDefault(oo =&amp;gt; oo.Type == &amp;quot;Email&amp;quot;)?.Value;
+        }
+
+        public static string Tel(this ClaimsPrincipal @this)
+        {
+            return @this?.Claims?.FirstOrDefault(oo =&amp;gt; oo.Type == &amp;quot;Tel&amp;quot;)?.Value;
+        }
+
+        public static string Status(this ClaimsPrincipal @this)
+        {
+            return @this?.Claims?.FirstOrDefault(oo =&amp;gt; oo.Type == &amp;quot;Status&amp;quot;)?.Value;
+        }
+
+    }
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;启动项目&lt;/p&gt;
+&lt;p&gt;request的参数增加了 username 和 password，而 grant_type 更改為 “password”&lt;br&gt;
+&lt;img src=&#34;https://hhanyuqiang.github.io/post-images/1611561024058.jpg&#34; alt=&#34;&#34; loading=&#34;lazy&#34;&gt;&lt;br&gt;
+检查JWT 可以看到增加了自定义的内容&lt;br&gt;
+&lt;img src=&#34;https://hhanyuqiang.github.io/post-images/1611561562453.jpg&#34; alt=&#34;&#34; loading=&#34;lazy&#34;&gt;&lt;br&gt;
+对了 密码那个记得不要放这里&lt;br&gt;
+掉用API&lt;br&gt;
+&lt;img src=&#34;https://hhanyuqiang.github.io/post-images/1611562112224.jpg&#34; alt=&#34;&#34; loading=&#34;lazy&#34;&gt;&lt;br&gt;
+Refresh AccessToken&lt;br&gt;
+修改Client&lt;br&gt;
+在Scope加上IdentityServerConstants.StandardScopes.OfflineAccess&lt;br&gt;
+加上token 相关的参数(有效时间、使用RefreshToken、过期方式…等等)&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt; new Client
+                {
+                    ClientId = &amp;quot;consoleapp&amp;quot;,
                     ClientName = &amp;quot;Client Credentials Client&amp;quot;,
 
-                    AllowedGrantTypes = GrantTypes.ResourceOwnerPasswordAndClientCredentials,
-                    ClientSecrets = { new Secret(&amp;quot;511536EF-F270-4058-80CA-1C89C192F69A&amp;quot;.Sha256()) },
 
-                    AllowedScopes = { &amp;quot;scope1&amp;quot; , &amp;quot;scope2&amp;quot; }
+                    // AllowedGrantTypes = new List&amp;lt;string&amp;gt;()
+                    //{
+                    //    IdentityServer4.Models.GrantTypes.ResourceOwnerPassword.ToString(),
+                    //    GrantTypeConstants.ResourceWeixinOpen,//新增的自定义微信客户端的授权模式
+                    //},
+                    //AllowedGrantTypes= IdentityServer4.Models.GrantTypes.ResourceOwnerPassword,
+                    AllowedGrantTypes=IdentityServer4.Models.GrantTypes.ResourceOwnerPasswordAndClientCredentials ,
+
+                    ClientSecrets = { new Secret(&amp;quot;consoleappsecrets&amp;quot;.Sha256()) },
+                    AllowedScopes = {
+                            IdentityServerConstants.StandardScopes.OpenId,
+                            IdentityServerConstants.StandardScopes.Profile,
+                            IdentityServerConstants.StandardScopes.Email,
+                            IdentityServerConstants.StandardScopes.Phone,
+                            StandardScopes.OfflineAccess,//如果要获取refresh_tokens ,必须在scopes中加上OfflineAccess
+                             &amp;quot;invoice.read&amp;quot;
+                    },
+                    RequireConsent=false,// 是否需要同意授权 （默认是false）
+                    AlwaysIncludeUserClaimsInIdToken=true,//所有Scopes
+                    AllowOfflineAccess = true,//如果要获取refresh_tokens ,必须把AllowOfflineAccess设置为true
+                    RefreshTokenUsage = TokenUsage.ReUse,
+                    AccessTokenLifetime = 18000,
+                    RefreshTokenExpiration = TokenExpiration.Absolute,
+                    AbsoluteRefreshTokenLifetime = 300,
                 },
-                new Client
-                {
-                    ClientId = &amp;quot;interactive&amp;quot;,
-                    ClientSecrets = { new Secret(&amp;quot;49C1A7E1-0C79-4A89-A3D6-A37998FB86B0&amp;quot;.Sha256()) },
-
-                    AllowedGrantTypes = GrantTypes.Code,
-
-                    RedirectUris = { &amp;quot;https://localhost:44300/signin-oidc&amp;quot; },
-                    FrontChannelLogoutUri = &amp;quot;https://localhost:44300/signout-oidc&amp;quot;,
-                    PostLogoutRedirectUris = { &amp;quot;https://localhost:44300/signout-callback-oidc&amp;quot; },
-
-                    AllowOfflineAccess = true,
-                    AllowedScopes = { &amp;quot;openid&amp;quot;, &amp;quot;profile&amp;quot;, &amp;quot;scope2&amp;quot; }
-                },
-            };
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;修改Consoleclient&lt;br&gt;
-将&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;
-            //var tokenResponse = await client.RequestClientCredentialsTokenAsync(new ClientCredentialsTokenRequest
-            //{
-            //    Address = disco.TokenEndpoint,
-
-            //    ClientId = &amp;quot;consoleclient&amp;quot;,
-            //    ClientSecret = &amp;quot;511536EF-F270-4058-80CA-1C89C192F69A&amp;quot;,
-            //    Scope = &amp;quot;scope1&amp;quot;
-            //});
-
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;修改为&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt; var tokenResponse = await client.RequestPasswordTokenAsync(new PasswordTokenRequest
-            {
-                Address = disco.TokenEndpoint,
-                ClientId = &amp;quot;consoleclient&amp;quot;,
-                ClientSecret = &amp;quot;511536EF-F270-4058-80CA-1C89C192F69A&amp;quot;,
-                Scope = &amp;quot;scope1&amp;quot;,
-                Password = &amp;quot;alice&amp;quot;,
-                UserName = &amp;quot;alice&amp;quot;
-
-            });
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;结束&lt;/p&gt;
+&lt;p&gt;执行&lt;br&gt;
+取得token 时会一并返回refreshToken&lt;br&gt;
+&lt;img src=&#34;https://hhanyuqiang.github.io/post-images/1611562698688.jpg&#34; alt=&#34;&#34; loading=&#34;lazy&#34;&gt;&lt;br&gt;
+拿refreshToken 可以取的新的AccessToken(注意这边用的是不同的grant_type)&lt;br&gt;
+&lt;img src=&#34;https://hhanyuqiang.github.io/post-images/1611563580615.jpg&#34; alt=&#34;&#34; loading=&#34;lazy&#34;&gt;&lt;/p&gt;
 ">IdentityServer4使用密码保护API资源</a>
       </div>
       
@@ -773,164 +1171,62 @@ namespace MvcClient
         <a class="result-title" style="opacity: 0;" href="https://hhanyuqiang.github.io/identityserver4-client-credentials/"" data-c="
           &lt;p&gt;.NET Core与.NET Framework对接IdentityServer4&lt;/p&gt;
 &lt;!-- more --&gt;
-&lt;p&gt;&lt;ul class=&#34;markdownIt-TOC&#34;&gt;
-&lt;li&gt;&lt;a href=&#34;#%E5%88%9B%E5%BB%BAidentityserver4%E9%A1%B9%E7%9B%AE&#34;&gt;创建IdentityServer4项目&lt;/a&gt;&lt;br&gt;
-*
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;#%E4%BF%AE%E6%94%B9configcs&#34;&gt;修改Config.cs&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;#%E6%B3%A8%E6%84%8F&#34;&gt;注意&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;#%E4%BF%AE%E6%94%B9startupcs&#34;&gt;修改Startup.cs&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;#%E4%BF%AE%E6%94%B9launchsettingsjson&#34;&gt;修改launchSettings.json&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;#%E5%88%9B%E5%BB%BA%E5%AE%A2%E6%88%B7%E7%AB%AF-%E6%8E%A7%E5%88%B6%E5%8F%B0%E9%A1%B9%E7%9B%AEconsoleclient&#34;&gt;创建客户端 控制台项目consoleclient&lt;/a&gt;&lt;br&gt;
-*
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;#%E5%BC%80%E5%A7%8B%E4%BF%AE%E6%94%B9programcs&#34;&gt;开始修改Program.cs&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;#%E6%B7%BB%E5%8A%A0coreapi%E9%A1%B9%E7%9B%AEnet-core&#34;&gt;添加CoreAPI项目(.NET CORE)&lt;/a&gt;&lt;br&gt;
-*
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;#%E4%BF%AE%E6%94%B9startupcs-2&#34;&gt;修改Startup.cs&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;#%E4%BF%AE%E6%94%B9configureservices&#34;&gt;修改ConfigureServices&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;#%E4%BF%AE%E6%94%B9weatherforecastcontroller&#34;&gt;修改WeatherForecastController&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;#%E5%86%8D%E5%9B%9E%E5%88%B0consoleclient%E9%A1%B9%E7%9B%AE-%E4%BF%AE%E6%94%B9program&#34;&gt;再回到ConsoleClient项目 修改Program&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;#%E5%88%9B%E5%BB%BA%E9%A1%B9%E7%9B%AEnet4apinet-framework&#34;&gt;创建项目Net4Api（.NET Framework）&lt;/a&gt;&lt;br&gt;
-*
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;#%E6%B7%BB%E5%8A%A0startupcs&#34;&gt;添加Startup.cs&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;#%E6%B7%BB%E5%8A%A0identitycontroller&#34;&gt;添加IdentityController&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;#%E4%BF%AE%E6%94%B9consoleclient%E9%A1%B9%E7%9B%AE&#34;&gt;修改ConsoleClient项目&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;#%E4%BF%AE%E6%94%B9%E6%8E%88%E6%9D%83%E4%B8%AD%E5%BF%83startup%E7%9A%84configureservices%E6%96%B9%E6%B3%95&#34;&gt;修改授权中心Startup.的ConfigureServices方法&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;客户端应用不代表用户，客户端应用本身就相当于资源所有者&lt;/li&gt;
 &lt;li&gt;通常用于机器对机器的通信&lt;/li&gt;
 &lt;li&gt;客户端也需要身份认证&lt;br&gt;
 &lt;img src=&#34;https://hhanyuqiang.github.io/post-images/1608862831806.jpg&#34; alt=&#34;&#34; loading=&#34;lazy&#34;&gt;&lt;/li&gt;
 &lt;/ul&gt;
-&lt;table&gt;
-&lt;thead&gt;
-&lt;tr&gt;
-&lt;th&gt;模板&lt;/th&gt;
-&lt;th&gt;简称&lt;/th&gt;
-&lt;th&gt;说明&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;
-&lt;tbody&gt;
-&lt;tr&gt;
-&lt;td&gt;IdentityServer4 with AdminUI&lt;/td&gt;
-&lt;td&gt;is4admin&lt;/td&gt;
-&lt;td&gt;这为用户、身份、客户端和资源提供了一个基于web的管理界面.该社区版本旨在测试IdentityServer集成场景，并且仅限于本地主机：5000、SQLite、10个用户和2个客户端。社区版不适合生产应用 。&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;IdentityServer4 with ASP.NET Core Identity&lt;/td&gt;
-&lt;td&gt;is4aspid&lt;/td&gt;
-&lt;td&gt;添加使用ASP.NET标识进行用户管理的基本IdentityServer。如果您自动启动数据库，您将得到两个用户：Alice和bob--都带有密码Pass123$。检查SeedData.cs文件。&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;IdentityServer4 Empty&lt;/td&gt;
-&lt;td&gt;is4empty&lt;/td&gt;
-&lt;td&gt;在没有UI的情况下创建一个最小的IdentityServer4项目。&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;IdentityServer4 with Entity Framework Stores&lt;/td&gt;
-&lt;td&gt;is4ef&lt;/td&gt;
-&lt;td&gt;添加使用实体框架进行配置和状态管理的基本IdghtyServer。如果您启动数据库，您将获得一些基本的客户端和资源注册，请检查SeedData.cs文件。&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;dentityServer4 with In-Memory Stores and Test Users&lt;/td&gt;
-&lt;td&gt;is4inmem&lt;/td&gt;
-&lt;td&gt;添加具有UI、测试用户和示例客户端和资源的基本IdentityServer。显示内存中的代码和JSON配置。&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;IdentityServer4 Quickstart UI (UI assets only)&lt;/td&gt;
-&lt;td&gt;is4ui&lt;/td&gt;
-&lt;td&gt;将快速启动UI添加到当前项目(例如，可以在is4empty的基础上添加)&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
-&lt;h1 id=&#34;创建identityserver4项目&#34;&gt;创建IdentityServer4项目&lt;/h1&gt;
+&lt;h2 id=&#34;创建identityserver4项目&#34;&gt;创建IdentityServer4项目&lt;/h2&gt;
 &lt;p&gt;使用IdentityServer4 来搭建一个鉴权中心，首先建议安装一下IdentityServer4的官方项目模板。也可以不安装，自己创建项目，然后NuGet安装需要的包也行。（不过还是推荐用官方的模板，很方便）。&lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;dotnet new -i identityserver4.templates //下载identityserver4模板
 dotnet new is4inmem --name Idp //创建一个is4inmem模板的项目 名字为Idp
 &lt;/code&gt;&lt;/pre&gt;
-&lt;h3 id=&#34;修改configcs&#34;&gt;修改Config.cs&lt;/h3&gt;
-&lt;pre&gt;&lt;code&gt;    public static class Config
+&lt;h3 id=&#34;安装nuget-package&#34;&gt;安装Nuget Package&lt;/h3&gt;
+&lt;pre&gt;&lt;code&gt;dotnet add package IdentityServer4
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&#34;添加configcs配置类&#34;&gt;添加Config.cs配置类&lt;/h3&gt;
+&lt;pre&gt;&lt;code&gt; public class Config
     {
         public static IEnumerable&amp;lt;IdentityResource&amp;gt; IdentityResources =&amp;gt;
-            new IdentityResource[]
-            {
-                new IdentityResources.OpenId(),
-                new IdentityResources.Profile(),
-            };
+        new IdentityResource[]
+        {
+                 new IdentityResources.OpenId(),
+        };
 
-        /// &amp;lt;summary&amp;gt;
-        /// Authorization Server保护了哪些 API Scope（作用域）
-        /// &amp;lt;/summary&amp;gt;
-        /// &amp;lt;returns&amp;gt;&amp;lt;/returns&amp;gt;
+        //定义ApiScopes
         public static IEnumerable&amp;lt;ApiScope&amp;gt; ApiScopes =&amp;gt;
-            new ApiScope[]
-            {
-                new ApiScope(&amp;quot;scope1&amp;quot;),
-                new ApiScope(&amp;quot;scope2&amp;quot;),
-            };
 
+           new ApiScope[]
+               {
+                     // invoice API specific scopes
+                     new ApiScope(name: &amp;quot;invoice.read&amp;quot;,   displayName: &amp;quot;Reads your invoices.&amp;quot;),
+               };
+        //定义ApiResources
         public static IEnumerable&amp;lt;ApiResource&amp;gt; ApiResources =&amp;gt;
-            new ApiResource[]
-            {
-                new ApiResource(&amp;quot;api1&amp;quot;)
+           new ApiResource[]
+           {
+                new ApiResource(&amp;quot;invoice&amp;quot;, &amp;quot;Invoice API&amp;quot;)
                 {
-                    Scopes = { &amp;quot;scope1&amp;quot;, &amp;quot;scope2&amp;quot; }
+                    Scopes = { &amp;quot;invoice.read&amp;quot;, }
                 }
-            };
-
-
-        /// &amp;lt;summary&amp;gt;
-        /// 哪些客户端 Client（应用） 可以使用这个 Authorization Server
-        /// &amp;lt;/summary&amp;gt;
-        /// &amp;lt;returns&amp;gt;&amp;lt;/returns&amp;gt;
+           };
+        //定义Clients
         public static IEnumerable&amp;lt;Client&amp;gt; Clients =&amp;gt;
-            new Client[]
-            {
-                //Client Credentials
+           new Client[]
+           {
                 new Client
                 {
-                    ClientId = &amp;quot;consoleclient&amp;quot;,
+                    ClientId = &amp;quot;consoleapp&amp;quot;,
                     ClientName = &amp;quot;Client Credentials Client&amp;quot;,
+                    ClientSecrets = { new Secret(&amp;quot;consoleappsecrets&amp;quot;.Sha256()) },
+                    AllowedScopes = {&amp;quot;invoice.read&amp;quot;},
 
-                    AllowedGrantTypes = ResourceOwnerPasswordAndClientCredentials，
-                    ClientSecrets = { new Secret(&amp;quot;511536EF-F270-4058-80CA-1C89C192F69A&amp;quot;.Sha256()) },
-
-                    AllowedScopes = { &amp;quot;scope1&amp;quot; , &amp;quot;scope2&amp;quot; }
-                },
-                new Client
-                {
-                    ClientId = &amp;quot;interactive&amp;quot;,
-                    ClientSecrets = { new Secret(&amp;quot;49C1A7E1-0C79-4A89-A3D6-A37998FB86B0&amp;quot;.Sha256()) },
-
-                    AllowedGrantTypes = GrantTypes.Code,
-
-                    RedirectUris = { &amp;quot;https://localhost:44300/signin-oidc&amp;quot; },
-                    FrontChannelLogoutUri = &amp;quot;https://localhost:44300/signout-oidc&amp;quot;,
-                    PostLogoutRedirectUris = { &amp;quot;https://localhost:44300/signout-callback-oidc&amp;quot; },
-
-                    AllowOfflineAccess = true,
-                    AllowedScopes = { &amp;quot;openid&amp;quot;, &amp;quot;profile&amp;quot;, &amp;quot;scope2&amp;quot; }
-                },
-            };
+                }
+           };
     }
 &lt;/code&gt;&lt;/pre&gt;
-&lt;h4 id=&#34;注意&#34;&gt;注意&lt;/h4&gt;
+&lt;h3 id=&#34;注意&#34;&gt;注意&lt;/h3&gt;
 &lt;p&gt;需要注意的是4.x版本的ApiScope和ApiResource是分开配置的，然后在ApiResource中一定要添加Scopes。如果你在网上搜的IdentityServer4教程比较老的，都是没有这个ApiScope的，默认ApiResource的Name作为Scope。类似这样：&lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;public static IEnumerable&amp;lt;ApiResource&amp;gt; ApiResources =&amp;gt;
         new ApiResource[]
@@ -951,138 +1247,117 @@ public static IEnumerable&amp;lt;Client&amp;gt; Clients =&amp;gt;
             },
         };
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;如果你这么写的话，虽然不影响你获取token，但是你访问api资源的话，永远会得到一个401错误！！！&lt;/p&gt;
-&lt;h3 id=&#34;修改startupcs&#34;&gt;修改Startup.cs&lt;/h3&gt;
-&lt;p&gt;ConfigureServices方法添加代码&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;   builder.AddInMemoryApiResources(Config.ApiResources);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h3 id=&#34;修改launchsettingsjson&#34;&gt;修改launchSettings.json&lt;/h3&gt;
-&lt;pre&gt;&lt;code&gt;   &amp;quot;applicationUrl&amp;quot;: &amp;quot;https://localhost:5000&amp;quot;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h1 id=&#34;创建客户端-控制台项目consoleclient&#34;&gt;创建客户端 控制台项目consoleclient&lt;/h1&gt;
-&lt;p&gt;添加NuGet程序包 IdentityModel&lt;/p&gt;
-&lt;h3 id=&#34;开始修改programcs&#34;&gt;开始修改Program.cs&lt;/h3&gt;
-&lt;pre&gt;&lt;code&gt;static  async Task Main(string[] args)
+&lt;p&gt;如果你这么写的话，虽然不影响你获取token，但是你访问api资源的话，永远会得到一个401错误！！！&lt;br&gt;
+修改Startup.cs&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt; public class Startup
+    {
+        // This method gets called by the runtime. Use this method to add services to the container.
+        // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
+        public void ConfigureServices(IServiceCollection services)
         {
-            await GetTokenAndCallApiAsync();
-        }
-
-        public static async Task GetTokenAndCallApiAsync()
-        {
-            var client = new HttpClient();
-            //请求accesstoken
-            var disco = await client.GetDiscoveryDocumentAsync(&amp;quot;https://localhost:5000&amp;quot;);
-            if (disco.IsError)
+            var builder = services.AddIdentityServer(options =&amp;gt;
             {
-                Console.WriteLine(disco.Error);
-                return;
-            }
-
-            var tokenResponse = await client.RequestClientCredentialsTokenAsync(new ClientCredentialsTokenRequest
-            {
-                Address = disco.TokenEndpoint,
-
-                ClientId = &amp;quot;consoleclient&amp;quot;,
-                ClientSecret = &amp;quot;511536EF-F270-4058-80CA-1C89C192F69A&amp;quot;,
-                Scope = &amp;quot;scope1&amp;quot;
+                options.Events.RaiseErrorEvents = true;
+                options.Events.RaiseInformationEvents = true;
+                options.Events.RaiseFailureEvents = true;
+                options.Events.RaiseSuccessEvents = true;
+                // see https://identityserver4.readthedocs.io/en/latest/topics/resources.html
+                options.EmitStaticAudienceClaim = true;
             });
-
-            if (tokenResponse.IsError)
-            {
-                Console.WriteLine(tokenResponse.Error);
-                return;
-            }
-            //响应请求accesstoken
-            Console.WriteLine(tokenResponse.Json);
+              //.AddTestUsers(TestUsers.Users);
+            
+            // in-memory, code config
+            builder.AddInMemoryIdentityResources(Config.IdentityResources);
+            builder.AddInMemoryApiScopes(Config.ApiScopes);
+            builder.AddInMemoryClients(Config.Clients);
+            #region
+            builder.AddInMemoryApiResources(Config.ApiResources);
+            #endregion
+            // not recommended for production - you need to store your key material somewhere secure
+            builder.AddDeveloperSigningCredential();
         }
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;启动调试&lt;br&gt;
-&lt;img src=&#34;https://hhanyuqiang.github.io/post-images/1608866794854.jpg&#34; alt=&#34;&#34; loading=&#34;lazy&#34;&gt;&lt;br&gt;
-说明请求accesstoken成功&lt;/p&gt;
-&lt;h1 id=&#34;添加coreapi项目net-core&#34;&gt;添加CoreAPI项目(.NET CORE)&lt;/h1&gt;
-&lt;p&gt;NuGet安装：&lt;code&gt;Microsoft.AspNetCore.Authentication.JwtBearer&lt;/code&gt;&lt;/p&gt;
-&lt;h3 id=&#34;修改startupcs-2&#34;&gt;修改Startup.cs&lt;/h3&gt;
-&lt;pre&gt;&lt;code&gt;       services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-        .AddJwtBearer(options =&amp;gt;
+
+        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            //IdentityServer地址
-            options.Authority = &amp;quot;http://localhost:5000&amp;quot;;
-            //对应Idp中ApiResource的Name
-            options.Audience = &amp;quot;api1&amp;quot;;
-            //不使用https
-            options.RequireHttpsMetadata = false;
-        });
+            if (env.IsDevelopment())
+            {
+                app.UseDeveloperExceptionPage();
+            }
+
+            app.UseRouting();
+            app.UseIdentityServer();
+            app.UseEndpoints(endpoints =&amp;gt;
+            {
+                endpoints.MapGet(&amp;quot;/&amp;quot;, async context =&amp;gt;
+                {
+                    await context.Response.WriteAsync(&amp;quot;Hello World!&amp;quot;);
+                });
+            });
+        }
+    }
 &lt;/code&gt;&lt;/pre&gt;
-&lt;h3 id=&#34;修改configureservices&#34;&gt;修改ConfigureServices&lt;/h3&gt;
-&lt;pre&gt;&lt;code&gt;  //身份验证
-           app.UseAuthentication();
-           //授权
-           app.UseAuthorization();
+&lt;h3 id=&#34;修改启动端口为5000&#34;&gt;修改启动端口为5000&lt;/h3&gt;
+&lt;h3 id=&#34;启动程序&#34;&gt;启动程序&lt;/h3&gt;
+&lt;p&gt;打开postman掉用https://localhost:5000/connect/token&lt;br&gt;
+参数&lt;br&gt;
+client_id : 比照设定档的ClientId&lt;br&gt;
+client_secret : 比照设定档的ClientSecrets&lt;br&gt;
+grant_type : 在这边使用client_credentials&lt;br&gt;
+&lt;img src=&#34;https://hhanyuqiang.github.io/post-images/1611556122517.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34;&gt;&lt;br&gt;
+Token使用的是JWT，故可以直接贴到https://jwt.io/查看token内容，切记不要放敏感的资讯在上面&lt;br&gt;
+&lt;img src=&#34;https://hhanyuqiang.github.io/post-images/1611556285992.jpg&#34; alt=&#34;&#34; loading=&#34;lazy&#34;&gt;&lt;/p&gt;
+&lt;h2 id=&#34;创建webapi&#34;&gt;创建WebApi&lt;/h2&gt;
+&lt;h3 id=&#34;安装nuget-package用来解析jwt&#34;&gt;安装Nuget Package，用来解析JWT&lt;/h3&gt;
+&lt;pre&gt;&lt;code&gt;dotnet add pacakage Microsoft.AspNetCore.Authentication.JwtBearer
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&#34;startupcs&#34;&gt;Startup.cs&lt;/h3&gt;
+&lt;p&gt;简单加上验证&lt;/p&gt;
+&lt;p&gt;Authority : 检查发行人&lt;br&gt;
+RequireHttpsMetadata : 忽略https 的检查&lt;br&gt;
+Audience : JWT 的发行对象&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+.AddJwtBearer(options =&amp;gt;
+{
+         //IdentityServer地址
+         options.Authority = &amp;quot;https://localhost:5000&amp;quot;;
+         //对应Idp中ApiResource的Name
+         options.Audience = &amp;quot;invoice&amp;quot;;
+         //不使用https
+         options.RequireHttpsMetadata = false;
+});
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&#34;记得也要加上验证授权的&#34;&gt;记得也要加上验证/授权的&lt;/h3&gt;
+&lt;pre&gt;&lt;code&gt;app.UseAuthentication();
+app.UseAuthorization();
 &lt;/code&gt;&lt;/pre&gt;
 &lt;h3 id=&#34;修改weatherforecastcontroller&#34;&gt;修改WeatherForecastController&lt;/h3&gt;
-&lt;pre&gt;&lt;code&gt;return new JsonResult(from c in User.Claims select new { c.Type, c.Value });
+&lt;pre&gt;&lt;code&gt;  [ApiController]
+    [Route(&amp;quot;[controller]&amp;quot;)]
+    [Authorize]
+    public class WeatherForecastController : ControllerBase
+    {
+ 
+        [HttpGet]
+        public ActionResult Get()
+        {
+            return new JsonResult(from c in User.Claims select new { c.Type, c.Value });
+        }
+    }
 &lt;/code&gt;&lt;/pre&gt;
-&lt;h2 id=&#34;再回到consoleclient项目-修改program&#34;&gt;再回到ConsoleClient项目 修改Program&lt;/h2&gt;
-&lt;pre&gt;&lt;code&gt; class Program
-  {
-      static  async Task Main(string[] args)
-      {
-          await GetTokenAndCallApiAsync();
-      }
-
-      public static async Task GetTokenAndCallApiAsync()
-      {
-          var client = new HttpClient();
-          //请求accesstoken
-          var disco = await client.GetDiscoveryDocumentAsync(&amp;quot;http://localhost:5000&amp;quot;);
-          if (disco.IsError)
-          {
-              Console.WriteLine(disco.Error);
-              return;
-          }
-          var tokenResponse = await client.RequestClientCredentialsTokenAsync(new ClientCredentialsTokenRequest
-          {
-              Address = disco.TokenEndpoint,
-
-              ClientId = &amp;quot;consoleclient&amp;quot;,
-              ClientSecret = &amp;quot;511536EF-F270-4058-80CA-1C89C192F69A&amp;quot;,
-              Scope = &amp;quot;scope1&amp;quot;
-          });
-
-          if (tokenResponse.IsError)
-          {
-              Console.WriteLine(tokenResponse.Error);
-              return;
-          }
-          //响应请求accesstoken
-          Console.WriteLine(tokenResponse.Json);
-          var apiClient = new HttpClient();
-          apiClient.SetBearerToken(tokenResponse.AccessToken);
-          //使用accesstoken请求被保护的资源
-          var response = await apiClient.GetAsync(&amp;quot;http://localhost:6000/WeatherForecast&amp;quot;);
-          if (!response.IsSuccessStatusCode)
-          {
-              Console.WriteLine(response.StatusCode);
-              Console.WriteLine(await response.Content.ReadAsStringAsync());
-          }
-          else
-          {
-              var content = await response.Content.ReadAsStringAsync();
-              //返回响应
-              Console.WriteLine(JArray.Parse(content));
-          }
-
-      }
-  }
+&lt;h3 id=&#34;修改启动端口为6000&#34;&gt;修改启动端口为6000&lt;/h3&gt;
+&lt;p&gt;执行&lt;br&gt;
+取得token 并放在header 后就可以正常访问api&lt;br&gt;
+&lt;img src=&#34;https://hhanyuqiang.github.io/post-images/1611557300008.jpg&#34; alt=&#34;&#34; loading=&#34;lazy&#34;&gt;&lt;/p&gt;
+&lt;h2 id=&#34;client&#34;&gt;Client&lt;/h2&gt;
+&lt;p&gt;这边的步骤非必要，只是让呼叫端可以使用IdentityServer 提供的nuget package 更方便的取得/操作token，我们这里用的postman&lt;/p&gt;
+&lt;h2 id=&#34;创建项目net4apinet-framework&#34;&gt;创建项目Net4Api（.NET Framework）&lt;/h2&gt;
+&lt;p&gt;安装NuGet包&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;IdentitySever3.AccessTokenValidation
+Microsoft.Owin.Host.SystemWeb
+Microsoft.Owin.Cors
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;运行结果&lt;br&gt;
-&lt;img src=&#34;https://hhanyuqiang.github.io/post-images/1608870028999.jpg&#34; alt=&#34;&#34; loading=&#34;lazy&#34;&gt;&lt;/p&gt;
-&lt;h1 id=&#34;创建项目net4apinet-framework&#34;&gt;创建项目Net4Api（.NET Framework）&lt;/h1&gt;
-&lt;p&gt;安装NuGet包&lt;br&gt;
-&lt;code&gt;IdentitySever3.AccessTokenValidation&lt;/code&gt;&lt;br&gt;
-&lt;code&gt;Microsoft.Owin.Host.SystemWeb&lt;/code&gt;&lt;br&gt;
-&lt;code&gt;Microsoft.Owin.Cors&lt;/code&gt;&lt;/p&gt;
-&lt;h3 id=&#34;添加startupcs&#34;&gt;添加Startup.cs&lt;/h3&gt;
+&lt;p&gt;添加Startup.cs&lt;/p&gt;
 &lt;pre&gt;&lt;code&gt; public void Configuration(IAppBuilder app)
         {
             JwtSecurityTokenHandler.InboundClaimTypeMap.Clear();
@@ -1092,11 +1367,11 @@ public static IEnumerable&amp;lt;Client&amp;gt; Clients =&amp;gt;
                 {
                     Authority = &amp;quot;https://localhost:5000&amp;quot;,
                     ValidationMode = ValidationMode.Local,
-                    RequiredScopes = new[] { &amp;quot;scope1&amp;quot; },
+                    RequiredScopes = new[] { &amp;quot;invoice.read&amp;quot; },
                 });
         }
 &lt;/code&gt;&lt;/pre&gt;
-&lt;h3 id=&#34;添加identitycontroller&#34;&gt;添加IdentityController&lt;/h3&gt;
+&lt;p&gt;添加IdentityController&lt;/p&gt;
 &lt;pre&gt;&lt;code&gt; [HttpGet]
         [Route(&amp;quot;identity&amp;quot;)]
         [Authorize]
@@ -1113,59 +1388,7 @@ public static IEnumerable&amp;lt;Client&amp;gt; Clients =&amp;gt;
             return Json(claims);
         }
 &lt;/code&gt;&lt;/pre&gt;
-&lt;h2 id=&#34;修改consoleclient项目&#34;&gt;修改ConsoleClient项目&lt;/h2&gt;
-&lt;p&gt;添加方法GetTokenAndCallNet4ApiAsync&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt; public static async Task GetTokenAndCallNet4ApiAsync()
-        {
-            // discover endpoints from metadata
-            var client = new HttpClient();
-            var disco = await client.GetDiscoveryDocumentAsync(&amp;quot;https://localhost:5000&amp;quot;);
-            if (disco.IsError)
-            {
-                Console.WriteLine(disco.Error);
-                return;
-            }
-
-            var tokenResponse = await client.RequestClientCredentialsTokenAsync(new ClientCredentialsTokenRequest
-            {
-                Address = disco.TokenEndpoint,
-
-                ClientId = &amp;quot;consoleclient&amp;quot;,
-                ClientSecret = &amp;quot;511536EF-F270-4058-80CA-1C89C192F69A&amp;quot;,
-                Scope = &amp;quot;scope1&amp;quot;
-            });
-
-            if (tokenResponse.IsError)
-            {
-                Console.WriteLine(tokenResponse.Error);
-                return;
-            }
-
-            Console.WriteLine(tokenResponse.Json);
-
-            // call api
-            var apiClient = new HttpClient();
-            apiClient.SetBearerToken(tokenResponse.AccessToken);
-
-            var response = await apiClient.GetAsync(&amp;quot;http://localhost:8001/identity&amp;quot;);
-            if (!response.IsSuccessStatusCode)
-            {
-                Console.WriteLine(response.StatusCode);
-                Console.WriteLine(await response.Content.ReadAsStringAsync());
-
-                Console.WriteLine(&amp;quot;Calling Verify&amp;quot;);
-                response = await apiClient.GetAsync(&amp;quot;http://localhost:8001/verify&amp;quot;);
-                Console.WriteLine(response.StatusCode);
-                Console.WriteLine(await response.Content.ReadAsStringAsync());
-            }
-            else
-            {
-                var content = await response.Content.ReadAsStringAsync();
-                Console.WriteLine(JArray.Parse(content));
-            }
-        }
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h2 id=&#34;修改授权中心startup的configureservices方法&#34;&gt;修改授权中心Startup.的ConfigureServices方法&lt;/h2&gt;
+&lt;p&gt;修改授权中心Startup.的ConfigureServices方法&lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;var builder = services.AddIdentityServer(options =&amp;gt;
             {
                 options.AccessTokenJwtType = &amp;quot;JWT&amp;quot;;
@@ -1176,9 +1399,6 @@ public static IEnumerable&amp;lt;Client&amp;gt; Clients =&amp;gt;
                 options.EmitStaticAudienceClaim = true;
             })
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Main里面的掉用  &lt;code&gt;await GetTokenAndCallNet4ApiAsync();&lt;/code&gt;&lt;br&gt;
-#最后&lt;br&gt;
-&lt;img src=&#34;https://hhanyuqiang.github.io/post-images/1608883713128.jpg&#34; alt=&#34;&#34; loading=&#34;lazy&#34;&gt;&lt;/p&gt;
 ">IdentityServer4客户端授权模式</a>
       </div>
       
