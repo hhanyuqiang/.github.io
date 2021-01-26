@@ -9,7 +9,7 @@
 <meta name="description" content="温故而知新">
 <meta name="theme-color" content="#000">
 <title>关于 | hyq</title>
-<link rel="shortcut icon" href="/favicon.ico?v=1611565990021">
+<link rel="shortcut icon" href="/favicon.ico?v=1611652258150">
 <link rel="stylesheet" href="/media/css/pisces.css">
 <link rel="stylesheet" href="/media/fonts/font-awesome.css">
 <link
@@ -183,7 +183,7 @@
     <div class="sidebar-item-box">
       <a href="/archives/">
         
-        <span class="site-item-stat-count">6</span>
+        <span class="site-item-stat-count">5</span>
         <span class="site-item-stat-name language" data-lan="article">文章</span>
       </a>
     </div>
@@ -977,15 +977,6 @@
       </div>
       
       <div class="item">
-        <a class="result-title" style="opacity: 0;" href="https://hhanyuqiang.github.io/QZWzE2mKC/"" data-c="
-          &lt;h2 id=&#34;1-客户端授权模式&#34;&gt;1. &lt;a href=&#34;https://hhanyuqiang.github.io/identityserver4-client-credentials/&#34;&gt;客户端授权模式&lt;/a&gt;&lt;/h2&gt;
-&lt;h2 id=&#34;2-密码授权模式&#34;&gt;2. &lt;a href=&#34;https://hhanyuqiang.github.io/lXllogEfc/&#34;&gt;密码授权模式&lt;/a&gt;&lt;/h2&gt;
-&lt;h2 id=&#34;3-简化授权模式&#34;&gt;3. &lt;a href=&#34;https://hhanyuqiang.github.io/aSfZps_OB/&#34;&gt;简化授权模式&lt;/a&gt;&lt;/h2&gt;
-&lt;h2 id=&#34;3-自定义授权模式&#34;&gt;3. &lt;a href=&#34;https://hhanyuqiang.github.io/aSfZps_OB/&#34;&gt;自定义授权模式&lt;/a&gt;&lt;/h2&gt;
-">IdentityServer系列</a>
-      </div>
-      
-      <div class="item">
         <a class="result-title" style="opacity: 0;" href="https://hhanyuqiang.github.io/q4XgTu1Xt/"" data-c="
           &lt;p&gt;授权码授权流程描述&lt;/p&gt;
 &lt;p&gt;（A）用户访问第三方应用，第三方应用将用户导向认证服务器；&lt;/p&gt;
@@ -1007,86 +998,66 @@
 &lt;p&gt;（E）资源服务器会向浏览器返回一个脚本；&lt;/p&gt;
 &lt;p&gt;（F）浏览器会根据上一步返回的脚本，去提取在C步骤中获取到的令牌；&lt;/p&gt;
 &lt;p&gt;（G）浏览器将令牌推送给客户端。&lt;/p&gt;
-&lt;p&gt;修改Idpconfig.cs`&lt;br&gt;
-添加一个Client&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;new Client
-                {
-                    ClientName = &amp;quot;MVC website&amp;quot;,
-                    ClientId = &amp;quot;mvcclient&amp;quot;,
-                    // secret for authentication
-                    ClientSecrets =
-                    {
-                        new Secret(&amp;quot;secret2&amp;quot;.Sha256())
-                    },
-
-                    // no interactive user, use the clientid/secret for authentication
-                    AllowedGrantTypes = GrantTypes.Implicit,
-                    //RequireConsent = false,
-                    //RequirePkce = true,
-
-                     RedirectUris = { &amp;quot;https://localhost:8003/signin-oidc&amp;quot; },
-                    //FrontChannelLogoutUri = &amp;quot;https://localhost:44300/signout-oidc&amp;quot;,
-                    PostLogoutRedirectUris = { &amp;quot;https://localhost:8003/signout-callback-oidc&amp;quot; },
-
-                      AllowedScopes = {
-                           IdentityServerConstants.StandardScopes.OpenId,
-                            IdentityServerConstants.StandardScopes.Profile,
-                            IdentityServerConstants.StandardScopes.Email,
-                            IdentityServerConstants.StandardScopes.Phone,
-                         &amp;quot;scope1&amp;quot;
-                     },
-
-                    AllowOfflineAccess = true,
-                }
+&lt;p&gt;添加Quickstart模板&lt;br&gt;
+&lt;code&gt;https://github.com/IdentityServer/IdentityServer4.Quickstart.UI&lt;/code&gt;&lt;br&gt;
+下载后直接添加进项目&lt;br&gt;
+此存储库包含一个基于MVC的示例UI，用于登录，注销，授予管理和同意。&lt;br&gt;
+修改配置&lt;br&gt;
+配置中间件来使用静态文件：&lt;br&gt;
+&lt;code&gt;app.UseStaticFiles();&lt;/code&gt;&lt;br&gt;
+修改管道&lt;br&gt;
+&lt;code&gt;services.AddControllersWithViews();&lt;/code&gt;&lt;br&gt;
+运行项目 然后登录&lt;br&gt;
+&lt;img src=&#34;https://hhanyuqiang.github.io/post-images/1611626092518.jpg&#34; alt=&#34;&#34; loading=&#34;lazy&#34;&gt;&lt;br&gt;
+添加一个client&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;  //简化模式
+            new Client
+              {
+                  ClientId = &amp;quot;Implicit_client&amp;quot;,
+                  ClientName = &amp;quot;Implicit Auth&amp;quot;,
+                  AllowedGrantTypes = IdentityServer4.Models.GrantTypes.Implicit,
+                  RedirectUris ={
+                  &amp;quot;https://localhost:7000/signin-oidc&amp;quot;, //跳转登录到的客户端的地址
+                  },
+                  // RedirectUris = {&amp;quot;http://localhost:7000/auth.html&amp;quot; }, //跳转登出到的客户端的地址
+                  PostLogoutRedirectUris ={
+                      &amp;quot;https://localhost:7000/signout-callback-oidc&amp;quot;,
+                  },
+                  AllowedScopes = {
+                         IdentityServerConstants.StandardScopes.OpenId,
+                          IdentityServerConstants.StandardScopes.Profile,
+                       &amp;quot;invoice.read&amp;quot;
+                   },
+                    //允许将token通过浏览器传递
+                   AllowAccessTokensViaBrowser=true,
+                   // 是否需要同意授权 （默认是false）
+                    RequireConsent=false
+               },
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;新建一个MVC Core项目&lt;br&gt;
-修改stratup.cs&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;using System.IdentityModel.Tokens.Jwt;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-
-namespace MvcClient
-{
-    public class Startup
-    {
-        public Startup(IConfiguration configuration)
-        {
-            Configuration = configuration;
-        }
-
-        public IConfiguration Configuration { get; }
-
-        // This method gets called by the runtime. Use this method to add services to the container.
-        public void ConfigureServices(IServiceCollection services)
-        {
-            services.AddControllersWithViews();
-            services.AddAuthorization();
-            services.AddAuthentication(options =&amp;gt;
+&lt;p&gt;安装&lt;code&gt;IdentityServer4.AccessTokenValidation&lt;/code&gt;包&lt;br&gt;
+安装&lt;code&gt;IdentityServer4&lt;/code&gt;包&lt;br&gt;
+注册服务&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;  services.AddAuthentication(options =&amp;gt;
             {
                 options.DefaultScheme = &amp;quot;Cookies&amp;quot;;
                 options.DefaultChallengeScheme = &amp;quot;oidc&amp;quot;;
             })
-            .AddCookie(&amp;quot;Cookies&amp;quot;)
-            .AddOpenIdConnect(&amp;quot;oidc&amp;quot;, options =&amp;gt;
-            {
-                options.Authority = &amp;quot;https://localhost:5000&amp;quot;;
-                options.ClientId = &amp;quot;mvcclient&amp;quot;;
-                options.ClientSecret = &amp;quot;secret2&amp;quot;;
-                options.SaveTokens = true;
-                options.GetClaimsFromUserInfoEndpoint = true;
-                options.Scope.Add(&amp;quot;email&amp;quot;);
-                options.Scope.Add(&amp;quot;phone&amp;quot;);
+               .AddCookie(&amp;quot;Cookies&amp;quot;)
 
-            });
-        }
+              .AddOpenIdConnect(&amp;quot;oidc&amp;quot;, options =&amp;gt;
+              {
+                  options.Authority = &amp;quot;https://localhost:5000&amp;quot;;
+                  options.RequireHttpsMetadata = false;
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
-        {
-            if (env.IsDevelopment())
+                  options.ClientId = &amp;quot;Implicit_client&amp;quot;;
+
+                  options.SaveTokens = true;
+                  options.GetClaimsFromUserInfoEndpoint = true;
+              });
+            services.AddControllersWithViews();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;配置管道&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt; if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
@@ -1100,41 +1071,27 @@ namespace MvcClient
             app.UseStaticFiles();
 
             app.UseRouting();
-
             app.UseCookiePolicy();
             app.UseAuthentication();
             app.UseAuthorization();
-
             app.UseEndpoints(endpoints =&amp;gt;
             {
                 endpoints.MapControllerRoute(
                     name: &amp;quot;default&amp;quot;,
                     pattern: &amp;quot;{controller=Home}/{action=Index}/{id?}&amp;quot;);
             });
-        }
-    }
-}
-
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;为HomeControllers的Privacy添加``` `[Authorize]``&lt;br&gt;
+&lt;p&gt;HomeController的Privacy添加授权&lt;code&gt;[Authorize]&lt;/code&gt;&lt;br&gt;
 修改Privacy.cshtml&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;@{
-    ViewData[&amp;quot;Title&amp;quot;] = &amp;quot;Privacy Policy&amp;quot;;
-}
-&amp;lt;h1&amp;gt;@ViewData[&amp;quot;Title&amp;quot;]&amp;lt;/h1&amp;gt;
-
-&amp;lt;p&amp;gt;Use this page to detail your site&#39;s privacy policy.&amp;lt;/p&amp;gt;
-
-@using Microsoft.AspNetCore.Authentication
+&lt;pre&gt;&lt;code&gt;@using Microsoft.AspNetCore.Authentication
 
 &amp;lt;h2&amp;gt;Claims&amp;lt;/h2&amp;gt;
 
 &amp;lt;dl&amp;gt;
     @foreach (var claim in User.Claims)
     {
-        &amp;lt;dt&amp;gt;@claim.Type&amp;lt;/dt&amp;gt;
-        &amp;lt;dd&amp;gt;@claim.Value&amp;lt;/dd&amp;gt;
-    }
+&amp;lt;dt&amp;gt;@claim.Type&amp;lt;/dt&amp;gt;
+                &amp;lt;dd&amp;gt;@claim.Value&amp;lt;/dd&amp;gt;}
 &amp;lt;/dl&amp;gt;
 
 &amp;lt;h2&amp;gt;Properties&amp;lt;/h2&amp;gt;
@@ -1142,11 +1099,28 @@ namespace MvcClient
 &amp;lt;dl&amp;gt;
     @foreach (var prop in (await Context.AuthenticateAsync()).Properties.Items)
     {
-        &amp;lt;dt&amp;gt;@prop.Key&amp;lt;/dt&amp;gt;
-        &amp;lt;dd&amp;gt;@prop.Value&amp;lt;/dd&amp;gt;
-    }
+&amp;lt;dt&amp;gt;@prop.Key&amp;lt;/dt&amp;gt;
+                &amp;lt;dd&amp;gt;@prop.Value&amp;lt;/dd&amp;gt;}
 &amp;lt;/dl&amp;gt;
 
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;启动端口设置为7000&lt;br&gt;
+启动项目 登录&lt;br&gt;
+&lt;img src=&#34;https://hhanyuqiang.github.io/post-images/1611649248513.jpg&#34; alt=&#34;&#34; loading=&#34;lazy&#34;&gt;&lt;br&gt;
+退出登录&lt;br&gt;
+修改_Layout.cshtml&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt; &amp;lt;li class=&amp;quot;nav-item&amp;quot;&amp;gt;
+                            &amp;lt;a class=&amp;quot;nav-link text-dark&amp;quot; asp-area=&amp;quot;&amp;quot; asp-controller=&amp;quot;Home&amp;quot; asp-action=&amp;quot;Logout&amp;quot;&amp;gt;Logout&amp;lt;/a&amp;gt;
+                        &amp;lt;/li&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;修改HomeController&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;  public IActionResult Logout()
+        {
+            return SignOut(&amp;quot;Cookies&amp;quot;, &amp;quot;oidc&amp;quot;);
+        }
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;修改授权服务器AccountOptions.cs&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;public static bool AutomaticRedirectAfterSignOut = true;//退出登录直接跳转到首页 
 &lt;/code&gt;&lt;/pre&gt;
 ">IdentityServer4系列 简化模式</a>
       </div>
